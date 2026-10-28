@@ -165,8 +165,8 @@ const CFG={
   instagram:"https://www.instagram.com/bloomnailsandlashess/",
   instapay:"elhosseny76@instapay", /* Bloom deposits (approved by Captain 28-10-2026) */
   deposit:100,           /* EGP, booking deposit */
-  open:12, close:21,     /* first and last booking hour */
-  closedDays:[],         /* 0=Sun … 6=Sat, e.g. [5] if closed Friday */
+  open:13, close:19, shopClose:20, /* first and last booking hour; shop 13:00-20:00 (Captain 28-10-2026) */
+  closedDays:[1],        /* closed Monday (Captain 28-10-2026) */
   loyal:6, refer:"100"
 };
 const API=window.BLOOM_API||null; /* hosted version: {url, key} for live prices and online booking */
@@ -214,7 +214,7 @@ const T={
   next:"التالي",back:"رجوع",confirm:"تأكيد الحجز",lastStep:"خطوة أخيرة وحجزك يتأكد",sendWA:"ابعتي الرسالة دي لـ Bloom على واتساب",withShot:"، ومعاها صورة تحويل إنستاباي",openWA:"فتح واتساب",copy:"نسخ الرسالة",copied:"تم النسخ ✓",selected:"الرسالة متحددة، انسخيها",newB:"حجز جديد",sent:"وصلنا طلبك ✓ فريق Bloom هيكلمك يأكد الميعاد.",
   myTitle:"كارت Bloom بتاعك",stampsOf:"زيارات رموش",free:"الزيارة الجاية هدية 🎁",toFree:"فاضل لك {n} وتاخدي زيارة هدية",nextRefill:"ميعاد التعبئة الجاي",noRefill:"لما تحجزي رموش هنفكرك بميعاد التعبئة.",history:"حجوزاتك",noHist:"لسه ماحجزتيش من التطبيق.",bookAgain:"احجزي نفس الخدمة تاني",localNote:"الكارت ده محفوظ على موبايلك. الزيارات الرسمية بتتسجل في الصالون برقم موبايلك.",
   giftTitle:"اطلبي كارت هدية",value:"القيمة",from:"من",to:"لمين",giftMsg:"اطلبي الكارت",
-  infoTitle:"معلومات Bloom",addr:"العنوان",map:"افتحي الخريطة",hours:"المواعيد",hoursTxt:`كل يوم من ${CFG.open.toLocaleString("ar-EG")} الضهر لـ ${(CFG.close-12).toLocaleString("ar-EG")} بالليل`,call:"تليفون",insta:"إنستجرام",faq:"أسئلة بتتكرر",
+  infoTitle:"معلومات Bloom",addr:"العنوان",map:"افتحي الخريطة",hours:"المواعيد",hoursTxt:`كل يوم ما عدا الاتنين، من ${CFG.open-12===1?"١":(CFG.open-12).toLocaleString("ar-EG")} الضهر لـ ${(CFG.shopClose-12).toLocaleString("ar-EG")} بالليل`,call:"تليفون",insta:"إنستجرام",faq:"أسئلة بتتكرر",
   faqs:[["العربون بيترد؟","العربون بيتخصم من الحساب يوم الميعاد. لو لغيتي قبلها بـ ٢٤ ساعة بنحوله لميعاد تاني."],["الرموش بتقعد قد إيه؟","الرموش بتقع طبيعي مع رموشك، عشان كده التعبئة كل ١٠–١٤ يوم بتخليها دايمًا مليانة."],["ليه اختبار الحساسية؟","عشان نتأكد إن الغرا مناسب لعينك قبل أول جلسة. بياخد دقايق."],["الفريق كله ستات؟","أيوه، Bloom صالون حريمي وكل الفريق ستات."]]},
  en:{home:"Home",book:"Book",me:"My Bloom",info:"Info",hello:"Welcome to Bloom",helloSub:"Lashes, nails and brows in Kafr Abdo, Alexandria. Book in a minute.",bookNow:"Book an appointment",gift:"Gift card",giftSub:"A sweet gift for a friend",location:"Find us",locationSub:"33 Kerdahy St, Kafr Abdo",care:"Aftercare",careSub:"Tips for every service",perks:"Bloom perks",
   loyalTxt:`Every ${CFG.loyal}th lash visit is on us.`,referTxt:"Bring a friend: add her number when you book and you both get 10% off 🎁",patchTxt:"First lashes? We do a quick patch test for your safety.",
@@ -225,7 +225,7 @@ const T={
   next:"Next",back:"Back",confirm:"Confirm booking",lastStep:"One last step to confirm",sendWA:"Send this message to Bloom on WhatsApp",withShot:", with your InstaPay screenshot",openWA:"Open WhatsApp",copy:"Copy message",copied:"Copied ✓",selected:"Message selected — copy it",newB:"New booking",sent:"Request received ✓ The Bloom team will call to confirm.",
   myTitle:"Your Bloom card",stampsOf:"lash visits",free:"Your next visit is free 🎁",toFree:"{n} more and you get a free visit",nextRefill:"Next refill",noRefill:"Book lashes and we'll remind you when your refill is due.",history:"Your bookings",noHist:"No bookings from the app yet.",bookAgain:"Book the same again",localNote:"This card is saved on your phone. Official visits are recorded at the salon by your mobile number.",
   giftTitle:"Request a gift card",value:"Value",from:"From",to:"For",giftMsg:"Request the card",
-  infoTitle:"About Bloom",addr:"Address",map:"Open the map",hours:"Hours",hoursTxt:`Every day, ${CFG.open} pm to ${CFG.close-12} pm`,call:"Phone",insta:"Instagram",faq:"Questions",
+  infoTitle:"About Bloom",addr:"Address",map:"Open the map",hours:"Hours",hoursTxt:`Every day except Monday, ${CFG.open-12} pm to ${CFG.shopClose-12} pm`,call:"Phone",insta:"Instagram",faq:"Questions",
   faqs:[["Is the deposit refundable?","It comes off your bill on the day. Cancel 24 hours ahead and we move it to a new date."],["How long do lashes last?","They shed with your natural lashes, so a refill every 10–14 days keeps them full."],["Why a patch test?","It checks the glue suits your eyes before your first set. It takes minutes."],["Is the team all women?","Yes. Bloom is a ladies' salon and the whole team is women."]]}
 };
 const ICONS={home:'<svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7v9H4z"/></svg>',book:'<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',me:'<svg viewBox="0 0 24 24"><path d="M12 21s-7-4.5-7-10a4 4 0 017-2.6A4 4 0 0119 11c0 5.5-7 10-7 10z"/></svg>',info:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>'};
