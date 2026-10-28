@@ -178,6 +178,8 @@ let MENU=[
  {id:"p3",cat:"lashes",ar:"رموش شهرية",en:"Monthly lashes",price:500,min:90,fill:21},
  {id:"p4",cat:"lashes",ar:"رموش فول سيت",en:"Lash full set",price:700,min:120,fill:21,style:true},
  {id:"p5",cat:"lashes",ar:"رموش سيلك",en:"Silk lashes",price:700,min:120,fill:21,style:true},
+ {id:"p18",cat:"lashes",ar:"رموش سيلك فوليوم بريميوم",en:"Premium silk volume set",price:1300,min:150,fill:21,style:true},
+ {id:"p19",cat:"lashes",ar:"تعبئة رموش بعد ١٤ يوم",en:"Late lash refill (after 14 days)",price:350,min:75,fill:14},
  {id:"p6",cat:"brows",ar:"لامينيشن حواجب",en:"Brow lamination",price:500,min:45,fill:42},
  {id:"p8",cat:"nails",ar:"جل",en:"Gel nails",price:450,min:60,fill:21},
  {id:"p9",cat:"nails",ar:"إكس جل",en:"X-gel nails",price:550,min:75,fill:21},
@@ -204,7 +206,7 @@ const CARE={
 };
 const T={
  ar:{home:"الرئيسية",book:"احجزي",me:"Bloom بتاعتي",info:"معلومات",hello:"أهلاً بيكي في Bloom",helloSub:"رموش وأظافر وحواجب في كفر عبده، الإسكندرية. احجزي ميعادك في دقيقة.",bookNow:"احجزي ميعاد",gift:"كارت هدية",giftSub:"هدية حلوة لصاحبتك",location:"مكاننا",locationSub:"٣٣ شارع كرداحي، كفر عبده",care:"العناية بعد الجلسة",careSub:"نصايح لكل خدمة",perks:"مميزات Bloom",
-  loyalTxt:`كل ${CFG.loyal.toLocaleString("ar-EG")} زيارات رموش، السادسة هدية.`,referTxt:"هاتي صاحبتك واكتبي رقمها في الحجز، وليكم مفاجأة انتو الاتنين.",patchTxt:"أول رموش؟ بنعمل اختبار حساسية بسيط لسلامتك.",
+  loyalTxt:`كل ${CFG.loyal.toLocaleString("ar-EG")} زيارات رموش، السادسة هدية.`,referTxt:"هاتي صاحبتك واكتبي رقمها في الحجز، وانتو الاتنين ليكم خصم ١٠٪ 🎁",patchTxt:"أول رموش؟ بنعمل اختبار حساسية بسيط لسلامتك.",
   steps:["الخدمة","الميعاد","بياناتك","الدفع","تأكيد"],pick:"اختاري خدمتك",styleQ:"تحبي أنهي ستايل رموش؟",minutes:"دقيقة",egp:"جنيه",choose:"اختاري خدمة للبدء",svcs:"خدمة",about:"حوالي",
   when:"اختاري اليوم والساعة",confirmWA:"الميعاد بيتأكد معاكي على واتساب من فريق Bloom.",closed:"مقفول",
   you:"بياناتك",name:"الاسم",mobile:"رقم الموبايل",first:"أول مرة أزور Bloom",friend:"رقم صاحبتك اللي رشحتلك Bloom (اختياري)",notes:"ملاحظات (حساسية، شكل بتحبيه)",
@@ -215,7 +217,7 @@ const T={
   infoTitle:"معلومات Bloom",addr:"العنوان",map:"افتحي الخريطة",hours:"المواعيد",hoursTxt:`كل يوم من ${CFG.open.toLocaleString("ar-EG")} الضهر لـ ${(CFG.close-12).toLocaleString("ar-EG")} بالليل`,call:"تليفون",insta:"إنستجرام",faq:"أسئلة بتتكرر",
   faqs:[["العربون بيترد؟","العربون بيتخصم من الحساب يوم الميعاد. لو لغيتي قبلها بـ ٢٤ ساعة بنحوله لميعاد تاني."],["الرموش بتقعد قد إيه؟","الرموش بتقع طبيعي مع رموشك، عشان كده التعبئة كل ١٠–١٤ يوم بتخليها دايمًا مليانة."],["ليه اختبار الحساسية؟","عشان نتأكد إن الغرا مناسب لعينك قبل أول جلسة. بياخد دقايق."],["الفريق كله ستات؟","أيوه، Bloom صالون حريمي وكل الفريق ستات."]]},
  en:{home:"Home",book:"Book",me:"My Bloom",info:"Info",hello:"Welcome to Bloom",helloSub:"Lashes, nails and brows in Kafr Abdo, Alexandria. Book in a minute.",bookNow:"Book an appointment",gift:"Gift card",giftSub:"A sweet gift for a friend",location:"Find us",locationSub:"33 Kerdahy St, Kafr Abdo",care:"Aftercare",careSub:"Tips for every service",perks:"Bloom perks",
-  loyalTxt:`Every ${CFG.loyal}th lash visit is on us.`,referTxt:"Bring a friend: add her number when you book and you both get a treat.",patchTxt:"First lashes? We do a quick patch test for your safety.",
+  loyalTxt:`Every ${CFG.loyal}th lash visit is on us.`,referTxt:"Bring a friend: add her number when you book and you both get 10% off 🎁",patchTxt:"First lashes? We do a quick patch test for your safety.",
   steps:["Service","Time","Details","Payment","Confirm"],pick:"Choose your service",styleQ:"Which lash style do you like?",minutes:"min",egp:"EGP",choose:"Pick a service to start",svcs:"services",about:"about",
   when:"Choose a day and time",confirmWA:"The Bloom team confirms your time on WhatsApp.",closed:"Closed",
   you:"Your details",name:"Name",mobile:"Mobile number",first:"First visit to Bloom",friend:"Friend who recommended Bloom (optional)",notes:"Notes (allergies, look you like)",
