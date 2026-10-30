@@ -426,17 +426,17 @@ function vInfo(){
 function bind(){
   const on=(sel,fn)=>document.querySelectorAll(sel).forEach(el=>el.onclick=()=>{if(sending)return;fn(el)});
   on("[data-tab]",b=>{st.tab=b.dataset.tab;render();scrollTo(0,0)});
-  on("[data-go]",b=>{if(b.dataset.offers){st.cat="offers";st.step=0}st.tab=b.dataset.go;render();scrollTo(0,0)});
+  on("[data-go]",b=>{if(b.dataset.go==="book")st.reqId="";if(b.dataset.offers){st.cat="offers";st.step=0}st.tab=b.dataset.go;render();scrollTo(0,0)});
   on("[data-gift]",()=>{st.showGift=!st.showGift;render()});
   on("[data-care]",b=>{st.careCat=st.careCat===b.dataset.care&&st.tab==="home"&&b.classList.contains("tile")?"":b.dataset.care;render()});
   on("[data-gv]",b=>{st.giftVal=+b.dataset.gv;render()});
   on("[data-cat]",b=>{st.cat=b.dataset.cat;render()});
-  on("[data-svc]",b=>{const it=MENU.find(m=>m.id===b.dataset.svc);const i=st.picked.findIndex(p=>p.id===it.id);if(i>=0)st.picked.splice(i,1);else st.picked.push(it);if(!needStyle())st.style="";render()});
+  on("[data-svc]",b=>{st.reqId="";const it=MENU.find(m=>m.id===b.dataset.svc);const i=st.picked.findIndex(p=>p.id===it.id);if(i>=0)st.picked.splice(i,1);else st.picked.push(it);if(!needStyle())st.style="";render()});
   on("[data-style]",b=>{st.style=b.dataset.style;render()});
-  on("[data-day]",b=>{st.day=b.dataset.day;st.time="";loadTaken();render()});
-  on("[data-time]",b=>{st.time=b.dataset.time;render()});
+  on("[data-day]",b=>{st.reqId="";st.day=b.dataset.day;st.time="";loadTaken();render()});
+  on("[data-time]",b=>{st.reqId="";st.time=b.dataset.time;render()});
   on("[data-pay]",b=>{st.pay=b.dataset.pay;render()});
-  on("[data-rebook]",()=>{const b=me.bookings[0];const it=MENU.find(m=>m.id===b.svc);st.picked=it?[it]:[];st.cat=it?it.cat:"lashes";st.step=0;st.tab="book";render();scrollTo(0,0)});
+  on("[data-rebook]",()=>{st.reqId="";const b=me.bookings[0];const it=MENU.find(m=>m.id===b.svc);st.picked=it?[it]:[];st.cat=it?it.cat:"lashes";st.step=0;st.tab="book";render();scrollTo(0,0)});
   const upd=()=>{const n=$("#next");if(n)n.disabled=!ok()};
   const f=(id,k,clean)=>{const el=$(id);if(el)el.oninput=()=>{st[k]=clean?normPhone(el.value):el.value;upd()}};
   f("#f-name","name");f("#f-phone","phone",1);f("#f-friend","friend",1);f("#f-note","note");
