@@ -395,7 +395,7 @@ function vDone(){
   <p class="note" style="margin-top:14px">WhatsApp: <span class="num">${CFG.phone}</span></p>
   <div class="row"><button class="cp alt" id="again" type="button">${t("newB")}</button></div></section>`;
 }
-function nextRefill(){const b=me.bookings.find(x=>x.fill);if(!b)return null;const svc=MENU.find(m=>m.id===b.svc)||{ar:b.ar,en:b.en};return {date:addDays(b.day,b.fill),svc}}
+function nextRefill(){const b=me.bookings.find(x=>x.fill);if(!b)return null;const svc=MENU.find(m=>m.id===b.svc)||{ar:b.ar,en:b.en};return {date:addDays(b.day,b.fill),svc,i:me.bookings.indexOf(b)}}
 function vMe(){
   const n=lashCount()%CFG.loyal, nr=nextRefill();
   const nextFree=n===CFG.loyal-1;
@@ -403,7 +403,7 @@ function vMe(){
    <div class="loyal"><span class="wm">Bloom<i>.</i></span><p class="note" style="margin:4px 0 0">${t("myTitle")}${me.name?" · "+esc(me.name):""}</p>
     <div class="stamps">${Array.from({length:CFG.loyal},(_,i)=>`<span class="stamp ${i<n?"on":""}">${i===CFG.loyal-1?"🎁":i<n?"🌸":""}</span>`).join("")}</div>
     <p class="note"><b>${N(n)}/${N(CFG.loyal)}</b> ${t("stampsOf")} · ${nextFree?t("free"):t("toFree").replace("{n}",N(CFG.loyal-1-n))}</p></div>
-   <div class="card"><h3>${t("nextRefill")}</h3><p class="note">${nr?`<b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}`:t("noRefill")}</p>${nr?`<div style="margin-top:10px"><button class="go" data-rebook="0">${t("bookAgain")}</button></div>`:""}</div>
+   <div class="card"><h3>${t("nextRefill")}</h3><p class="note">${nr?`<b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}`:t("noRefill")}</p>${nr?`<div style="margin-top:10px"><button class="go" data-rebook="${nr.i}">${t("bookAgain")}</button></div>`:""}</div>
    <div class="card"><h3>${t("history")}</h3>${me.bookings.length?`<div class="hist">${me.bookings.slice(0,10).map(b=>`<div class="hrow"><span>${esc(b[lang]||b.ar)}</span><span>${esc(fmtDay(b.day))}</span></div>`).join("")}</div>`:`<p class="note">${t("noHist")}</p>`}</div>
    <p class="note">${t("localNote")}</p>
   </section>`;
@@ -436,7 +436,7 @@ function bind(){
   on("[data-day]",b=>{st.reqId="";st.day=b.dataset.day;st.time="";loadTaken();render()});
   on("[data-time]",b=>{st.reqId="";st.time=b.dataset.time;render()});
   on("[data-pay]",b=>{st.pay=b.dataset.pay;render()});
-  on("[data-rebook]",()=>{st.reqId="";const b=me.bookings[0];const it=MENU.find(m=>m.id===b.svc);st.picked=it?[it]:[];st.cat=it?it.cat:"lashes";st.step=0;st.tab="book";render();scrollTo(0,0)});
+  on("[data-rebook]",el=>{st.reqId="";const b=me.bookings[+el.dataset.rebook]||me.bookings[0];const it=MENU.find(m=>m.id===b.svc);st.picked=it?[it]:[];st.cat=it?it.cat:"lashes";st.step=0;st.tab="book";render();scrollTo(0,0)});
   const upd=()=>{const n=$("#next");if(n)n.disabled=!ok()};
   const f=(id,k,clean)=>{const el=$(id);if(el)el.oninput=()=>{st[k]=clean?normPhone(el.value):el.value;upd()}};
   f("#f-name","name");f("#f-phone","phone",1);f("#f-friend","friend",1);f("#f-note","note");
