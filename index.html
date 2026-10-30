@@ -168,7 +168,8 @@ const CFG={
   deposit:100,           /* EGP, booking deposit */
   open:13, close:19, shopClose:20, /* first and last booking hour; shop 13:00-20:00 (Captain 28-10-2026) */
   closedDays:[1],        /* closed Monday (Captain 28-10-2026) */
-  loyal:6, refer:"100"
+  loyal:6, refer:"100",
+  serverV2:false          /* switch on after the database safety update is applied */
 };
 const API=window.BLOOM_API||null; /* hosted version: {url, key} for live prices and online booking */
 
@@ -220,8 +221,8 @@ const T={
   steps:["الخدمة","الميعاد","بياناتك","الدفع","تأكيد"],pick:"اختاري خدمتك",styleQ:"تحبي أنهي ستايل رموش؟",minutes:"دقيقة",egp:"جنيه",choose:"اختاري خدمة للبدء",svcs:"خدمة",about:"حوالي",
   when:"اختاري اليوم والساعة",confirmWA:"الميعاد بيتأكد معاكي على واتساب من فريق Bloom.",closed:"مقفول",
   you:"بياناتك",name:"الاسم",mobile:"رقم الموبايل",first:"أول مرة أزور Bloom",friend:"رقم صاحبتك اللي رشحتلك Bloom (اختياري)",notes:"ملاحظات (حساسية، شكل بتحبيه)",
-  pay:"الدفع",dep:`عربون ${CFG.deposit.toLocaleString("ar-EG")} جنيه بإنستاباي`,depSub:"يثبّت ميعادك وبيتخصم من الحساب",full:"الدفع كامل بإنستاباي",fullSub:"ادفعي دلوقتي وخلصي",salon:"الدفع في الصالون",salonSub:"كاش أو فيزا يوم الميعاد",summary:"ملخص الحجز",total:"الإجمالي",policy:"الإلغاء أو تغيير الميعاد قبلها بـ ٢٤ ساعة على الأقل. الإلغاء في آخر ٢٤ ساعة أو عدم الحضور العربون مش بيترد.",consent:"أوافق إن Bloom تحتفظ باسمي ورقم موبايلي لإدارة حجزي والتواصل معايا بخصوصه فقط. البيانات مش بتتشارك مع أي حد، وأقدر أطلب مسحها في أي وقت.",privT:"خصوصيتك",privTxt:"بنحتفظ باسمك ورقمك وحجوزاتك بس، عشان ننظم مواعيدك وتذكيرات التعبئة. البيانات محفوظة بأمان ومحدش يشوفها غير إدارة Bloom، وبتتمسح لو ما زرتيناش سنتين أو لو طلبتي ده. الكاميرات في الاستقبال ومنطقة الخدمة بس، والتسجيلات سرية ولا يطّلع عليها إلا الإدارة. لمسح بياناتك ابعتي رسالة واتساب لـ Bloom.",
-  next:"التالي",back:"رجوع",confirm:"تأكيد الحجز",lastStep:"خطوة أخيرة وحجزك يتأكد",sendWA:"ابعتي الرسالة دي لـ Bloom على واتساب",withShot:"، ومعاها صورة تحويل إنستاباي",openWA:"فتح واتساب",copy:"نسخ الرسالة",copied:"تم النسخ ✓",selected:"الرسالة متحددة، انسخيها",newB:"حجز جديد",sent:"وصلنا طلبك ✓ فريق Bloom هيكلمك يأكد الميعاد.",
+  pay:"الدفع",dep:`عربون ${CFG.deposit.toLocaleString("ar-EG")} جنيه بإنستاباي`,depSub:"بيتخصم من الحساب. الميعاد بيتثبت لما فريق Bloom يأكد التحويل",full:"الدفع كامل بإنستاباي",fullSub:"الحجز بيتأكد بعد ما فريق Bloom يراجع التحويل",salon:"الدفع في الصالون",salonSub:"كاش أو فيزا يوم الميعاد",summary:"ملخص الحجز",total:"الإجمالي",policy:"الإلغاء أو تغيير الميعاد قبلها بـ ٢٤ ساعة على الأقل. الإلغاء في آخر ٢٤ ساعة أو عدم الحضور العربون مش بيترد.",consent:"أوافق إن Bloom تحتفظ باسمي ورقم موبايلي لإدارة حجزي والتواصل معايا بخصوصه فقط. البيانات مش بتتشارك مع أي حد، وأقدر أطلب مسحها في أي وقت.",privT:"خصوصيتك",privTxt:"بنحتفظ باسمك ورقمك وحجوزاتك بس، عشان ننظم مواعيدك وتذكيرات التعبئة. البيانات محفوظة بأمان ومحدش يشوفها غير إدارة Bloom، وبتتمسح لو ما زرتيناش سنتين أو لو طلبتي ده. الكاميرات في الاستقبال ومنطقة الخدمة بس، والتسجيلات سرية ولا يطّلع عليها إلا الإدارة. لمسح بياناتك ابعتي رسالة واتساب لـ Bloom.",
+  next:"التالي",back:"رجوع",confirm:"تأكيد الحجز",lastStep:"خطوة أخيرة وحجزك يتأكد",sendWA:"ابعتي الرسالة دي لـ Bloom على واتساب",withShot:"، ومعاها صورة تحويل إنستاباي",openWA:"فتح واتساب",copy:"نسخ الرسالة",copied:"تم النسخ ✓",selected:"الرسالة متحددة، انسخيها",newB:"حجز جديد",sent:"وصلنا طلبك ✓ فريق Bloom هيكلمك يأكد الميعاد.",notSent:"الطلب ماوصلش أونلاين. ابعتي الرسالة دي على واتساب عشان نستلمه.",sending:"جاري الإرسال…",slotGone:"الميعاد ده اتحجز أو عدّى. اختاري ميعاد تاني.",busy:"محجوز",estPrices:"الأسعار تقديرية لحد ما الصالون يأكدها.",
   myTitle:"كارت Bloom بتاعك",stampsOf:"زيارات رموش",free:"الزيارة الجاية هدية 🎁",toFree:"فاضل لك {n} وتاخدي زيارة هدية",nextRefill:"ميعاد التعبئة الجاي",noRefill:"لما تحجزي رموش هنفكرك بميعاد التعبئة.",history:"حجوزاتك",noHist:"لسه ماحجزتيش من التطبيق.",bookAgain:"احجزي نفس الخدمة تاني",localNote:"الكارت ده محفوظ على موبايلك. الزيارات الرسمية بتتسجل في الصالون برقم موبايلك.",
   giftTitle:"اطلبي كارت هدية",value:"القيمة",from:"من",to:"لمين",giftMsg:"اطلبي الكارت",
   infoTitle:"معلومات Bloom",addr:"العنوان",map:"افتحي الخريطة",hours:"المواعيد",hoursTxt:`كل يوم ما عدا الاتنين، من ${CFG.open-12===1?"١":(CFG.open-12).toLocaleString("ar-EG")} الضهر لـ ${(CFG.shopClose-12).toLocaleString("ar-EG")} بالليل`,call:"تليفون",insta:"إنستجرام",faq:"أسئلة بتتكرر",
@@ -231,8 +232,8 @@ const T={
   steps:["Service","Time","Details","Payment","Confirm"],pick:"Choose your service",styleQ:"Which lash style do you like?",minutes:"min",egp:"EGP",choose:"Pick a service to start",svcs:"services",about:"about",
   when:"Choose a day and time",confirmWA:"The Bloom team confirms your time on WhatsApp.",closed:"Closed",
   you:"Your details",name:"Name",mobile:"Mobile number",first:"First visit to Bloom",friend:"Friend who recommended Bloom (optional)",notes:"Notes (allergies, look you like)",
-  pay:"Payment",dep:`${CFG.deposit} EGP deposit by InstaPay`,depSub:"Holds your slot, taken off your bill",full:"Pay in full by InstaPay",fullSub:"Pay now and you're done",salon:"Pay at the salon",salonSub:"Cash or card on the day",summary:"Booking summary",total:"Total",policy:"Please cancel or move your booking at least 24 hours ahead. A cancellation in the last 24 hours, or a no-show, keeps the deposit.",consent:"I agree that Bloom keeps my name and mobile number only to manage my booking and contact me about it. They are never shared, and I can ask for them to be deleted at any time.",privT:"Your privacy",privTxt:"We keep only your name, number and bookings, to arrange your appointments and refill reminders. Your data is stored securely, only Bloom's management can see it, and it is deleted after two years without a visit or whenever you ask. Cameras cover reception and the service area only, and recordings are private and viewed by management only. To have your data deleted, send Bloom a WhatsApp message.",
-  next:"Next",back:"Back",confirm:"Confirm booking",lastStep:"One last step to confirm",sendWA:"Send this message to Bloom on WhatsApp",withShot:", with your InstaPay screenshot",openWA:"Open WhatsApp",copy:"Copy message",copied:"Copied ✓",selected:"Message selected — copy it",newB:"New booking",sent:"Request received ✓ The Bloom team will call to confirm.",
+  pay:"Payment",dep:`${CFG.deposit} EGP deposit by InstaPay`,depSub:"Taken off your bill. Your time is held once the Bloom team confirms the transfer",full:"Pay in full by InstaPay",fullSub:"Your booking is confirmed after the Bloom team checks the transfer",salon:"Pay at the salon",salonSub:"Cash or card on the day",summary:"Booking summary",total:"Total",policy:"Please cancel or move your booking at least 24 hours ahead. A cancellation in the last 24 hours, or a no-show, keeps the deposit.",consent:"I agree that Bloom keeps my name and mobile number only to manage my booking and contact me about it. They are never shared, and I can ask for them to be deleted at any time.",privT:"Your privacy",privTxt:"We keep only your name, number and bookings, to arrange your appointments and refill reminders. Your data is stored securely, only Bloom's management can see it, and it is deleted after two years without a visit or whenever you ask. Cameras cover reception and the service area only, and recordings are private and viewed by management only. To have your data deleted, send Bloom a WhatsApp message.",
+  next:"Next",back:"Back",confirm:"Confirm booking",lastStep:"One last step to confirm",sendWA:"Send this message to Bloom on WhatsApp",withShot:", with your InstaPay screenshot",openWA:"Open WhatsApp",copy:"Copy message",copied:"Copied ✓",selected:"Message selected — copy it",newB:"New booking",sent:"Request received ✓ The Bloom team will call to confirm.",notSent:"Your request did not go through online. Send this message on WhatsApp so we receive it.",sending:"Sending…",slotGone:"That time is no longer free. Please pick another.",busy:"Taken",estPrices:"Prices are estimates until the salon confirms.",
   myTitle:"Your Bloom card",stampsOf:"lash visits",free:"Your next visit is free 🎁",toFree:"{n} more and you get a free visit",nextRefill:"Next refill",noRefill:"Book lashes and we'll remind you when your refill is due.",history:"Your bookings",noHist:"No bookings from the app yet.",bookAgain:"Book the same again",localNote:"This card is saved on your phone. Official visits are recorded at the salon by your mobile number.",
   giftTitle:"Request a gift card",value:"Value",from:"From",to:"For",giftMsg:"Request the card",
   infoTitle:"About Bloom",addr:"Address",map:"Open the map",hours:"Hours",hoursTxt:`Every day except Monday, ${CFG.open-12} pm to ${CFG.shopClose-12} pm`,call:"Phone",insta:"Instagram",faq:"Questions",
@@ -256,9 +257,10 @@ const N=n=>Number(n).toLocaleString(lang==="ar"?"ar-EG":"en-US");
 const nm=s=>s[lang];
 const total=()=>st.picked.reduce((a,p)=>a+p.price,0), mins=()=>st.picked.reduce((a,p)=>a+p.min,0);
 const iso=d=>d.toLocaleDateString("en-CA",{timeZone:"Africa/Cairo"});
-const addDays=(d,n)=>{const x=new Date(d+"T12:00:00");x.setDate(x.getDate()+n);return iso(x)};
-const fmtDay=d=>new Date(d+"T12:00:00").toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",{weekday:"long",day:"numeric",month:"long"});
+const addDays=(d,n)=>{const x=new Date(d+"T12:00:00Z");x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
+const fmtDay=d=>new Date(d+"T12:00:00Z").toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",{timeZone:"UTC",weekday:"long",day:"numeric",month:"long"});
 const hourLabel=h=>lang==="ar"?`${N(h>12?h-12:h)}:٠٠ ${h<12?"ص":h===12?"ظهرًا":"م"}`:`${h>12?h-12:h}:00 ${h<12?"am":"pm"}`;
+const normPhone=v=>{let x=String(v).replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d)).replace(/[۰-۹]/g,d=>"۰۱۲۳۴۵۶۷۸۹".indexOf(d)).replace(/\D/g,"");if(x.startsWith("0020"))x="0"+x.slice(4);else if(x.startsWith("20")&&x.length===12)x="0"+x.slice(2);return x.slice(0,11)};
 const isLash=()=>st.picked.some(p=>p.cat==="lashes");
 const lashCount=()=>me.bookings.reduce((a,b)=>a+(b.lash?1:0),0);
 
@@ -278,7 +280,7 @@ function render(){
   }
   bind();
 }
-function ok(){return [st.picked.length>0&&(!needStyle()||st.style),!!(st.day&&st.time),st.name.trim().length>1&&/^01\d{9}$/.test(st.phone),st.consent][st.step]}
+function ok(){return [st.picked.length>0&&(!needStyle()||st.style),slotOk(),st.name.trim().length>1&&/^01\d{9}$/.test(st.phone),st.consent][st.step]}
 const needStyle=()=>st.picked.some(p=>p.style);
 
 function vHome(){
@@ -327,15 +329,25 @@ function vSvc(){
   </section>`;
 }
 function lashSvg(n){let p="";const c=11;for(let i=0;i<c;i++){const x=8+i*(84/(c-1)),len=10+n*3+Math.sin(i/(c-1)*Math.PI)*8;for(let k=0;k<Math.min(n,3);k++){const dx=(k-(Math.min(n,3)-1)/2)*2.2;p+=`<path d="M${x} 30 q ${dx} -${len/2} ${dx*2+(i-5)*0.8} -${len}" stroke="currentColor" stroke-width="${n>3?1.4:1.1}" fill="none" stroke-linecap="round"/>`}}return `<svg viewBox="0 0 100 34" aria-hidden="true"><path d="M4 30 Q50 38 96 30" stroke="currentColor" stroke-width="1.6" fill="none"/>${p}</svg>`}
+const cairoToday=()=>iso(new Date());
+const dowOf=k=>new Date(k+"T12:00:00Z").getUTCDay();
+const dayLbl=(k,o)=>new Date(k+"T12:00:00Z").toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",Object.assign({timeZone:"UTC"},o));
+const cairoHour=()=>+new Date().toLocaleString("en-GB",{timeZone:"Africa/Cairo",hour:"2-digit",hour12:false});
+let TAKEN=[];
+const isTaken=(k,h)=>TAKEN.some(x=>x.day===k&&x.start_min<h*60+mins()&&x.end_min>h*60);
+const fitsDay=h=>h*60+mins()<=CFG.shopClose*60;
+function freeHours(k){if(!k||CFG.closedDays.includes(dowOf(k)))return [];const today=cairoToday(),hn=cairoHour();const r=[];for(let h=CFG.open;h<=CFG.close;h++){if(k===today&&h<=hn)continue;if(!fitsDay(h))continue;r.push(h)}return r}
+function slotOk(){return !!st.day&&!!st.time&&freeHours(st.day).includes(+st.time)&&!isTaken(st.day,+st.time)}
 function vTime(){
-  const days=[];const d0=new Date();for(let i=0;i<14;i++){const x=new Date(d0);x.setDate(d0.getDate()+i);days.push(x)}
-  const now=new Date(), todayIso=iso(now), hNow=+now.toLocaleString("en-GB",{timeZone:"Africa/Cairo",hour:"2-digit",hour12:false});
-  const hrs=[];for(let h=CFG.open;h<=CFG.close;h++)hrs.push(h);
+  const today=cairoToday(),days=[];for(let i=0;i<14;i++)days.push(addDays(today,i));
+  if(st.time&&!slotOk())st.time="";
+  const hrs=freeHours(st.day);
   return `<section><h2>${t("when")}</h2>
-  <div class="days">${days.map(d=>{const k=iso(d),closed=CFG.closedDays.includes(d.getDay());return `<button class="day" data-day="${k}" aria-pressed="${st.day===k}" ${closed?"disabled":""}><span>${d.toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",{weekday:"short"})}</span><b>${d.toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",{day:"numeric"})}</b><span>${closed?t("closed"):d.toLocaleDateString(lang==="ar"?"ar-EG":"en-GB",{month:"short"})}</span></button>`}).join("")}</div>
-  ${st.day?`<div class="times" role="group">${hrs.filter(h=>st.day!==todayIso||h>hNow).map(h=>`<button class="chip" data-time="${h}" aria-pressed="${st.time===String(h)}">${hourLabel(h)}</button>`).join("")}</div><p class="note">${t("confirmWA")}</p>`:""}
+  <div class="days">${days.map(k=>{const closed=CFG.closedDays.includes(dowOf(k));return `<button class="day" data-day="${k}" aria-pressed="${st.day===k}" ${closed?"disabled":""}><span>${dayLbl(k,{weekday:"short"})}</span><b>${dayLbl(k,{day:"numeric"})}</b><span>${closed?t("closed"):dayLbl(k,{month:"short"})}</span></button>`}).join("")}</div>
+  ${st.day?`<div class="times" role="group">${hrs.map(h=>{const busy=isTaken(st.day,h);return `<button class="chip" data-time="${h}" aria-pressed="${st.time===String(h)}" ${busy?"disabled":""}>${hourLabel(h)}${busy?" · "+t("busy"):""}</button>`}).join("")}</div><p class="note">${t("confirmWA")}</p>`:""}
   </section>`;
 }
+function loadTaken(){if(!API)return;fetch(API.url+"/rest/v1/rpc/bloom_taken_slots",{method:"POST",headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json"},body:"{}"}).then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)){TAKEN=rows;if(st.tab==="book"&&st.step===1)render()}}).catch(()=>{})}
 function vInfoStep(){
   return `<section><h2>${t("you")}</h2><div class="card grid">
    <label for="f-name">${t("name")}<input id="f-name" autocomplete="name" value="${esc(st.name)}"></label>
@@ -353,27 +365,30 @@ function vPay(){
    ${opt("instapay",t("dep"),t("depSub"))}${opt("full",t("full")+" · "+N(total())+" "+t("egp"),t("fullSub"))}${opt("salon",t("salon"),t("salonSub"))}
   </div>
   ${st.pay!=="salon"&&CFG.instapay?`<p class="note">InstaPay: <span class="num">${esc(CFG.instapay)}</span></p>`:""}
-  <div class="card" style="margin-top:12px"><b>${t("summary")}</b>
+  <div class="card" style="margin-top:12px"><b>${t("summary")}</b>${LIVE?"":`<p class="note">${t("estPrices")}</p>`}
    <p class="note">${st.picked.map(p=>esc(nm(p))).join(" + ")}${sty?` (${lang==="ar"?sty.ar:sty.en})`:""}<br>${esc(fmtDay(st.day))} · ${hourLabel(+st.time)}<br>${t("total")}: ${N(total())} ${t("egp")}</p>
    <p class="note">${t("policy")}</p></div>
   <label class="card" for="f-consent" style="margin-top:12px;display:flex;gap:10px;align-items:flex-start;cursor:pointer"><input type="checkbox" id="f-consent" ${st.consent?"checked":""} style="margin-top:4px;width:18px;height:18px;flex:none"><span class="note" style="margin:0">${t("consent")}</span></label></section>`;
 }
 function message(){
-  const sty=STYLES.find(s=>s.id===st.style);
-  const pay={instapay:T.ar.dep,full:T.ar.full+` (${total()} جنيه)`,salon:T.ar.salon}[st.pay];
-  return `أهلاً Bloom 🌸 عايزة أحجز:
-الخدمة: ${st.picked.map(p=>p.ar).join(" + ")}${sty?" – ستايل "+sty.ar:""}
-اليوم: ${new Date(st.day+"T12:00:00").toLocaleDateString("ar-EG",{weekday:"long",day:"numeric",month:"long"})} – الساعة ${st.time>12?st.time-12:st.time}${st.time<12?" ص":" م"}
-الاسم: ${st.name}
-الموبايل: ${st.phone}
-${st.first?"أول زيارة ✨\n":""}${st.friend?"رشحتلي Bloom: "+st.friend+"\n":""}${st.note?"ملاحظات: "+st.note+"\n":""}الإجمالي: ${total()} جنيه
-الدفع: ${pay}`;
+  const sty=STYLES.find(s=>s.id===st.style), ar=lang==="ar";
+  const pay={instapay:t("dep"),full:t("full")+` (${total()} ${t("egp")})`,salon:t("salon")}[st.pay];
+  const h=+st.time, hh=h>12?h-12:h;
+  const L=ar?{hi:"أهلاً Bloom 🌸 عايزة أحجز:",svc:"الخدمة",sty:" – ستايل ",day:"اليوم",at:" – الساعة ",name:"الاسم",mob:"الموبايل",first:"أول زيارة ✨",ref:"رشحتلي Bloom",note:"ملاحظات",tot:"الإجمالي",pay:"الدفع",ref2:"رقم الطلب"}
+    :{hi:"Hello Bloom 🌸 I'd like to book:",svc:"Service",sty:" – style ",day:"Day",at:" at ",name:"Name",mob:"Mobile",first:"First visit ✨",ref:"Referred by",note:"Notes",tot:"Total",pay:"Payment",ref2:"Request ref"};
+  return `${L.hi}
+${L.svc}: ${st.picked.map(p=>p[lang]).join(" + ")}${sty?L.sty+(ar?sty.ar:sty.en):""}
+${L.day}: ${fmtDay(st.day)}${L.at}${hh}${ar?(h<12?" ص":" م"):(h<12?" am":" pm")}
+${L.name}: ${st.name}
+${L.mob}: ${st.phone}
+${st.first?L.first+"\n":""}${st.friend?L.ref+": "+st.friend+"\n":""}${st.note?L.note+": "+st.note+"\n":""}${L.tot}: ${total()} ${t("egp")}
+${L.pay}: ${pay}${st.reqId?"\n"+L.ref2+": "+st.reqId.slice(0,8).toUpperCase():""}`;
 }
 function vDone(){
   const m=message();
-  return `<section class="done"><div class="ring">🌸</div><h2>${st.sentOnline?t("sent"):t("lastStep")}</h2>
+  return `<section class="done"><div class="ring">🌸</div><h2>${st.sentOnline?t("sent"):t("lastStep")}</h2>${st.sentOnline?"":`<p class="note" style="color:var(--rose)">${t("notSent")}</p>`}
   <p class="note">${t("sendWA")}${st.pay!=="salon"?t("withShot"):""}.</p>
-  <pre class="msg" id="msg" dir="rtl">${esc(m)}</pre>
+  <pre class="msg" id="msg" dir="${lang==="ar"?"rtl":"ltr"}">${esc(m)}</pre>
   <div class="row"><a class="btnlink" href="https://wa.me/${CFG.wa}?text=${encodeURIComponent(m)}" target="_blank" rel="noopener">${t("openWA")}</a><button class="cp alt" id="cp" type="button">${t("copy")}</button></div>
   <p class="note" style="margin-top:14px">WhatsApp: <span class="num">${CFG.phone}</span></p>
   <div class="row"><button class="cp alt" id="again" type="button">${t("newB")}</button></div></section>`;
@@ -416,12 +431,12 @@ function bind(){
   on("[data-cat]",b=>{st.cat=b.dataset.cat;render()});
   on("[data-svc]",b=>{const it=MENU.find(m=>m.id===b.dataset.svc);const i=st.picked.findIndex(p=>p.id===it.id);if(i>=0)st.picked.splice(i,1);else st.picked.push(it);if(!needStyle())st.style="";render()});
   on("[data-style]",b=>{st.style=b.dataset.style;render()});
-  on("[data-day]",b=>{st.day=b.dataset.day;st.time="";render()});
+  on("[data-day]",b=>{st.day=b.dataset.day;st.time="";loadTaken();render()});
   on("[data-time]",b=>{st.time=b.dataset.time;render()});
   on("[data-pay]",b=>{st.pay=b.dataset.pay;render()});
   on("[data-rebook]",()=>{const b=me.bookings[0];const it=MENU.find(m=>m.id===b.svc);st.picked=it?[it]:[];st.cat=it?it.cat:"lashes";st.step=0;st.tab="book";render();scrollTo(0,0)});
   const upd=()=>{const n=$("#next");if(n)n.disabled=!ok()};
-  const f=(id,k,clean)=>{const el=$(id);if(el)el.oninput=()=>{st[k]=clean?el.value.replace(/\D/g,""):el.value;upd()}};
+  const f=(id,k,clean)=>{const el=$(id);if(el)el.oninput=()=>{st[k]=clean?normPhone(el.value):el.value;upd()}};
   f("#f-name","name");f("#f-phone","phone",1);f("#f-friend","friend",1);f("#f-note","note");
   const fi=$("#f-first");if(fi)fi.onchange=()=>{st.first=fi.checked;render()};
   const fc=$("#f-consent");if(fc)fc.onchange=()=>{st.consent=fc.checked;$("#next").disabled=!ok()};
@@ -429,20 +444,43 @@ function bind(){
   if(gw){const link=()=>{const msg=`أهلاً Bloom 🌸 عايزة كارت هدية بقيمة ${st.giftVal} جنيه\nمن: ${st.giftFrom||me.name||""}\nلـ: ${st.giftTo||""}`;gw.href=`https://wa.me/${CFG.wa}?text=${encodeURIComponent(msg)}`};
     gf.oninput=()=>{st.giftFrom=gf.value;link()};gt.oninput=()=>{st.giftTo=gt.value;link()};link()}
   const cp=$("#cp");if(cp)cp.onclick=async()=>{try{await navigator.clipboard.writeText(message());cp.textContent=t("copied")}catch(e){const r=document.createRange();r.selectNodeContents($("#msg"));getSelection().removeAllRanges();getSelection().addRange(r);cp.textContent=t("selected")}};
-  const ag=$("#again");if(ag)ag.onclick=()=>{Object.assign(st,{step:0,picked:[],style:"",day:"",time:"",note:"",friend:"",first:false,pay:"instapay",sentOnline:false,consent:false});render();scrollTo(0,0)};
+  const ag=$("#again");if(ag)ag.onclick=()=>{Object.assign(st,{reqId:"",step:0,picked:[],style:"",day:"",time:"",note:"",friend:"",first:false,pay:"instapay",sentOnline:false,consent:false});render();scrollTo(0,0)};
 }
+let sending=false;
+const uuid=()=>(crypto.randomUUID?crypto.randomUUID():"xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx".replace(/x/g,()=>(Math.random()*16|0).toString(16)));
+function lockUI(on){["#next","#back","#lang"].forEach(id=>{const e=$(id);if(e)e.disabled=on});document.querySelectorAll("#tabbar button").forEach(b=>b.disabled=on);const n=$("#next");if(n&&on)n.textContent=t("sending")}
 async function confirmBooking(){
-  me.name=st.name;me.phone=st.phone;
-  st.picked.forEach(p=>me.bookings.unshift({svc:p.id,ar:p.ar,en:p.en,day:st.day,fill:p.fill||0,lash:p.cat==="lashes"}));
-  me.bookings=me.bookings.slice(0,30);saveMe();
-  if(API){try{const r=await fetch(API.url+"/rest/v1/booking_requests",{method:"POST",headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify({services:st.picked.map(p=>({id:p.id,name:p.ar,price:p.price})),lash_style:st.style||null,day:st.day,time:st.time,name:st.name.trim(),phone:st.phone,friend:st.friend||null,first_visit:st.first,note:st.note||null,pay:st.pay,total:total(),lang,consent:true,consent_at:new Date().toISOString()})});st.sentOnline=r.ok}catch(e){st.sentOnline=false}}
+  if(!st.reqId)st.reqId=uuid();
+  me.name=st.name;me.phone=st.phone;saveMe();
+  st.sentOnline=false;
+  if(API){
+    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),15000);
+    const body={services:st.picked.map(p=>({id:p.id,name:p.ar,price:p.price})),lash_style:st.style||null,day:st.day,time:st.time,name:st.name.trim(),phone:st.phone,friend:st.friend||null,first_visit:st.first,note:st.note||null,pay:st.pay,total:total(),lang,consent:true,consent_at:new Date().toISOString()};
+    if(CFG.serverV2)body.request_id=st.reqId;
+    try{const r=await fetch(API.url+"/rest/v1/booking_requests",{method:"POST",signal:ctl.signal,headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(body)});
+      st.sentOnline=r.ok||r.status===409; /* 409 = this same request already arrived */
+    }catch(e){st.sentOnline=false}finally{clearTimeout(tm)}
+  }
+  if(st.sentOnline){
+    const lash=st.picked.some(p=>p.cat==="lashes"), fill=Math.max(0,...st.picked.map(p=>p.fill||0)), main=st.picked.find(p=>p.fill===fill)||st.picked[0];
+    me.bookings.unshift({svc:main.id,ar:st.picked.map(p=>p.ar).join(" + "),en:st.picked.map(p=>p.en).join(" + "),day:st.day,fill,lash,ref:st.reqId});
+    me.bookings=me.bookings.slice(0,30);saveMe();
+  }
 }
-$("#next").onclick=async()=>{if(!ok())return;if(st.step===3)await confirmBooking();st.step=Math.min(4,st.step+1);render();scrollTo({top:0,behavior:"smooth"})};
+$("#next").onclick=async()=>{
+  if(sending||!ok())return;
+  if(st.step===3){
+    if(!slotOk()){alert(t("slotGone"));st.step=1;st.time="";loadTaken();render();return}
+    sending=true;lockUI(true);
+    try{await confirmBooking()}finally{sending=false;lockUI(false)}
+  }
+  st.step=Math.min(4,st.step+1);render();scrollTo({top:0,behavior:"smooth"})};
 $("#back").onclick=()=>{st.step=Math.max(0,st.step-1);render()};
-$("#lang").onclick=()=>{lang=lang==="ar"?"en":"ar";saveMe();render()};
+$("#lang").onclick=()=>{if(sending)return;lang=lang==="ar"?"en":"ar";saveMe();render()};
 
 /* hosted version: live prices from the Bloom database */
-if(API){fetch(API.url+"/rest/v1/services?active=eq.true&select=*&order=sort",{headers:{apikey:API.key,Authorization:"Bearer "+API.key}}).then(r=>r.ok?r.json():null).then(rows=>{if(rows&&rows.length){MENU=rows.map(r=>({id:r.id,cat:r.cat,ar:r.name_ar,en:r.name_en,price:r.price,min:r.minutes,fill:r.fill||0,style:!!r.style}));if(!MENU.some(m=>m.cat==="offers"))MENU=OFFERS.concat(MENU);render()}}).catch(()=>{})}
+let LIVE=!API;
+if(API){fetch(API.url+"/rest/v1/services?active=eq.true&select=*&order=sort",{headers:{apikey:API.key,Authorization:"Bearer "+API.key}}).then(r=>r.ok?r.json():null).then(rows=>{if(rows&&rows.length){LIVE=true;MENU=rows.map(r=>({id:r.id,cat:r.cat,ar:r.name_ar,en:r.name_en,price:r.price,min:r.minutes,fill:r.fill||0,style:!!r.style}));if(!MENU.some(m=>m.cat==="offers"))MENU=OFFERS.concat(MENU);render()}}).catch(()=>{});loadTaken()}
 render();
 })();
 </script>
