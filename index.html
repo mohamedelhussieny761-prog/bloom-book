@@ -426,7 +426,7 @@ function vInfo(){
 function bind(){
   const on=(sel,fn)=>document.querySelectorAll(sel).forEach(el=>el.onclick=()=>{if(sending)return;fn(el)});
   on("[data-tab]",b=>{st.tab=b.dataset.tab;render();scrollTo(0,0)});
-  on("[data-go]",b=>{if(b.dataset.go==="book")st.reqId="";if(b.dataset.offers){st.cat="offers";st.step=0}st.tab=b.dataset.go;render();scrollTo(0,0)});
+  on("[data-go]",b=>{if(b.dataset.go==="book"){st.reqId="";if(st.step===4)Object.assign(st,{step:0,picked:[],style:"",day:"",time:"",note:"",friend:"",first:false,pay:"instapay",sentOnline:false,rejected:"",consent:false})}if(b.dataset.offers){st.cat="offers";st.step=0}st.tab=b.dataset.go;render();scrollTo(0,0)});
   on("[data-gift]",()=>{st.showGift=!st.showGift;render()});
   on("[data-care]",b=>{st.careCat=st.careCat===b.dataset.care&&st.tab==="home"&&b.classList.contains("tile")?"":b.dataset.care;render()});
   on("[data-gv]",b=>{st.giftVal=+b.dataset.gv;render()});
