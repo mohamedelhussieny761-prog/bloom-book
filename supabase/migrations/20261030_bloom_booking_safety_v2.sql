@@ -1,5 +1,5 @@
 -- Meridian Zero · Bloom Book server safety (Captain "fix approved" 30-10-2026).
--- NOT YET APPLIED — waiting for the Captain's OK on the live database. Additive only: nothing removed.
+-- APPLIED by the Captain in Supabase SQL Editor, 30-10-2026 09:48.
 -- After applying: set serverV2:true in index.html CFG.
 alter table public.booking_requests add column if not exists request_id uuid;
 alter table public.booking_requests add column if not exists minutes integer;
