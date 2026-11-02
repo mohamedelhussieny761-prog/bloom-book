@@ -1,6 +1,6 @@
 /* Bloom app offline cache — Meridian Zero */
 const PREFIX="bloom-book-";
-const C=PREFIX+"v12";
+const C=PREFIX+"v13";
 const FILES=["./","index.html","screen.html","config.js","manifest.webmanifest","icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)));self.skipWaiting()});
 /* only clear this app's own old caches, never other apps on the same site */
