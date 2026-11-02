@@ -1,4 +1,6 @@
 -- Bloom moves into Louvre project (own schema 'bloom'). Meridian Zero.
+-- REQUIRED after running: Dashboard > Integrations > Data API > Settings > Exposed schemas: add 'bloom' and Save.
+-- (notify pgrst only reloads the cache; it does not expose a schema.) Done on 2026-11-02.
 begin;
 create schema if not exists bloom;
 grant usage on schema bloom to anon, authenticated, service_role;
@@ -32,7 +34,7 @@ alter table bloom.services enable row level security;
 alter table bloom.booking_requests enable row level security;
 create policy "anyone reads active services" on bloom.services for select to anon, authenticated using (active);
 create policy "anyone sends a booking request" on bloom.booking_requests for insert to anon
-  with check (status='new' and deposit_received=false and paid_at is null and day >= current_date and day <= current_date + 60);
+  with check (status='new' and deposit_received=false and paid_at is null and day >= (now() at time zone 'Africa/Cairo')::date and day <= (now() at time zone 'Africa/Cairo')::date + 60);
 create policy "owner reads requests" on bloom.booking_requests for select to authenticated using ((auth.jwt() ->> 'email') = 'meridian.zero82@gmail.com');
 create policy "owner updates requests" on bloom.booking_requests for update to authenticated using ((auth.jwt() ->> 'email') = 'meridian.zero82@gmail.com');
 
