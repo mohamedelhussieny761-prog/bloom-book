@@ -484,14 +484,17 @@ const catName=c=>{const x=CATS.find(k=>k[0]===c);return x?L(x[1],x[2]):c};
 const estNote=()=>LIVE?"":`<span class="note">${esc(t("estPrices"))}</span><br>`;
 const fmtP=m=>`${esc(nm(m))} — <b>${N(m.price)} ${t("egp")}</b> · ${N(m.min)} ${t("minutes")}`;
 const toks=x=>normA(x).split(/[^a-z0-9\u0621-\u064A]+/).map(w=>w.replace(/^(وال|بال|لل|ال)/,"")).filter(w=>w.length>=3);
+const GENERIC=new Set(["lash","lashes","eyelash","eyelashes","رموش","رمش","nail","nails","اظافر","ضوافر","brow","brows","حواجب","حاجب","pedicure","pedi","باديكير","price","prices","سعر","اسعار","بكام","كام","much","how","the","and","for","من","عايزه","عاوزه"]);
 function svcHits(q){
   const cat=Object.keys(KW).find(c=>has(q,KW[c]));
-  const qt=toks(q);
-  const sc=MENU.map(m=>({m,s:toks(m.ar+" "+m.en).filter((w,i,a)=>a.indexOf(w)===i&&qt.includes(w)).length}));
-  const best=Math.max(0,...sc.map(x=>x.s));
-  if(best>0){const top=sc.filter(x=>x.s===best).map(x=>x.m);const pool=cat?MENU.filter(m=>m.cat===cat):MENU;
-    if(top.length<pool.length)return {svcs:top,cat:cat||top[0].cat}}
-  return {svcs:cat?MENU.filter(m=>m.cat===cat):[],cat};
+  const pool=cat?MENU.filter(m=>m.cat===cat):MENU;
+  const qt=toks(q).filter(w=>!GENERIC.has(w));
+  if(qt.length){
+    const sc=pool.map(m=>({m,s:toks(m.ar+" "+m.en).filter((w,i,a)=>a.indexOf(w)===i&&!GENERIC.has(w)&&qt.includes(w)).length}));
+    const best=Math.max(0,...sc.map(x=>x.s));
+    if(best>0)return {svcs:sc.filter(x=>x.s===best).map(x=>x.m),cat:cat||sc.find(x=>x.s===best).m.cat};
+  }
+  return {svcs:cat?pool:[],cat};
 }
 function slotsFor(day,mn){
   if(!day||CFG.closedDays.includes(dowOf(day)))return [];
@@ -520,7 +523,7 @@ function answer(raw,fresh){
   if(is("pay"))return `${L(`العربون ${N(CFG.deposit)} جنيه بإنستاباي على`,`The deposit is ${CFG.deposit} EGP by InstaPay to`)} <span class="num">${esc(CFG.instapay)}</span>. ${L("بيتخصم من الحساب يوم الميعاد. وتقدري تدفعي كاش في الصالون.","It comes off your bill on the day. You can also pay cash at the salon.")}<div class="acts">${bookBtn("",cat)}</div>`;
   if(is("allergy"))return `${esc(t("patchTxt"))} ${L("اكتبي أي حساسية في خانة الملاحظات وانتي بتحجزي، والفريق هيراجعها معاكي.","Write any allergy in the notes when you book and the team will go through it with you.")}<div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
   if(is("care")){const c=cat&&CARE[cat]?cat:"lashes";return `<b>${L("العناية","Aftercare")} — ${catName(c)}</b><ul>${CARE[c][lang].map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`}
-  if(is("refill")&&!svcs.length||(is("refill")&&cat==="lashes"&&!is("price"))){const nr=nextRefill();return nr?`${L("ميعاد التعبئة الجاي","Your next refill")}: <b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}<div class="acts"><button type="button" data-ab-book="${esc(nr.svc.id||"")}" data-ab-cat="lashes">${L("احجزي التعبئة","Book the refill")}</button></div>`:`${L("التعبئة كل ١٠–١٤ يوم.","Refills every 10–14 days.")}<ul>${MENU.filter(m=>m.cat==="lashes"&&/refill|refresh|تعبئ/i.test(m.en+m.ar)).map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul>${estNote()}<div class="acts">${bookBtn("","lashes")}</div>`}
+  if(is("refill")&&!svcs.length||(is("refill")&&cat==="lashes"&&!is("price"))){const nr=nextLashRefill();return nr?`${L("ميعاد التعبئة الجاي","Your next refill")}: <b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}<div class="acts"><button type="button" data-ab-book="${esc(nr.svc.id||"")}" data-ab-cat="lashes">${L("احجزي التعبئة","Book the refill")}</button></div>`:`${L("التعبئة كل ١٠–١٤ يوم.","Refills every 10–14 days.")}<ul>${MENU.filter(m=>m.cat==="lashes"&&/refill|refresh|تعبئ/i.test(m.en+m.ar)).map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul>${estNote()}<div class="acts">${bookBtn("","lashes")}</div>`}
   if(is("hours")){const open=!CFG.closedDays.includes(dowOf(cairoToday()));const h=cairoHour();const now=open&&h>=CFG.open&&h<CFG.shopClose;return `${esc(t("hoursTxt"))}.<br>${now?L("✅ إحنا فاتحين دلوقتي.","✅ We're open now."):open?L("النهارده يوم شغل.","We're open today."):L("النهارده الاتنين، إحنا مقفولين. نشوفك بكره!","It's Monday, we're closed today. See you tomorrow!")}<div class="acts">${bookBtn("",cat)}</div>`}
   if(is("loc"))return `${L("٣٣ شارع كرداحي، كفر عبده، الإسكندرية","33 Kerdahy Street, Kafr Abdo, Alexandria")}<div class="acts"><a href="${CFG.maps}" target="_blank" rel="noopener">${t("map")}</a></div>`;
   if(cat==="offers"||(is("price")&&!svcs.length&&has(q,KW.offers))){const o=MENU.filter(m=>m.cat==="offers");return `<b>${L("عروض The perfect pair","The perfect pair offers")}</b><ul>${o.map(m=>`<li>${fmtP(m)}${m.was?` <s>${N(m.was)}</s>`:""}</li>`).join("")}</ul>${estNote()}<div class="acts">${bookBtn("","offers")}</div>`}
@@ -534,6 +537,7 @@ function answer(raw,fresh){
   if(is("greet"))return L(`أهلاً بيكي${me.name?" يا "+esc(me.name.split(" ")[0]):""} 🌸 أنا مساعدة Bloom. اسأليني عن الأسعار، المواعيد الفاضية، العروض، العنوان أو العناية بعد الجلسة.`,`Hi${me.name?" "+esc(me.name.split(" ")[0]):""} 🌸 I'm Bloom's assistant. Ask me about prices, free times, offers, the address or aftercare.`);
   return `${L("مش متأكدة فهمت سؤالك 🙈 جربي واحدة من الاختيارات تحت، أو كلمي الفريق.","I'm not sure I got that 🙈 Try one of the options below, or message the team.")}<div class="acts">${waBtn(raw)}</div>`;
 }
+function nextLashRefill(){const b=me.bookings.find(x=>x.fill&&(x.lash||(MENU.find(m=>m.id===x.svc)||{}).cat==="lashes"));if(!b)return null;const svc=MENU.find(m=>m.id===b.svc)||{id:b.svc,ar:b.ar,en:b.en};return {date:addDays(b.day,b.fill),svc}}
 const QUICK=()=>lang==="ar"?["بكام الرموش؟","مواعيد فاضية النهارده","العروض","العنوان","العربون","العناية بالرموش"]:["Lash prices","Free times today","Offers","Address","Deposit","Lash aftercare"];
 function renderChat(){
   const fab=$("#askfab");fab.hidden=AB.open||sending||(st.tab==="book"&&st.step<4);
