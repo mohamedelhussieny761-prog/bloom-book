@@ -481,6 +481,7 @@ const IN={
  allergy:["حساسيه","حساسة","allergy","allergic","patch","اختبار"]
 };
 const catName=c=>{const x=CATS.find(k=>k[0]===c);return x?L(x[1],x[2]):c};
+const estNote=()=>LIVE?"":`<span class="note">${esc(t("estPrices"))}</span><br>`;
 const fmtP=m=>`${esc(nm(m))} — <b>${N(m.price)} ${t("egp")}</b> · ${N(m.min)} ${t("minutes")}`;
 const toks=x=>normA(x).split(/[^a-z0-9\u0621-\u064A]+/).map(w=>w.replace(/^(وال|بال|لل|ال)/,"")).filter(w=>w.length>=3);
 function svcHits(q){
@@ -503,7 +504,7 @@ function slotsFor(day,mn){
   return r}
 const bookBtn=(svc,cat)=>`<button type="button" data-ab-book="${esc(svc||"")}" data-ab-cat="${esc(cat||"")}">${L("احجزي دلوقتي","Book now")}</button>`;
 const waBtn=txt=>`<a href="https://wa.me/${CFG.wa}?text=${encodeURIComponent(txt||L("أهلاً Bloom 🌸","Hi Bloom 🌸"))}" target="_blank" rel="noopener">${L("كلمي Bloom على واتساب","WhatsApp Bloom")}</a>`;
-function answer(raw){
+function answer(raw,fresh){
   const q=normA(raw);
   const {svcs,cat}=svcHits(q);
   const one=svcs.length===1?svcs[0]:null;
@@ -513,21 +514,21 @@ function answer(raw){
     const today=cairoToday(),tom=addDays(today,1);
     const day=(q.includes("بكره")||q.includes("بكرا")||q.includes("tomorrow"))?[tom]:[today,tom];
     const rows=day.map(d=>{const h=slotsFor(d,mn);return `<li><b>${esc(fmtDay(d))}:</b> ${h.length?h.slice(0,6).map(hourLabel).join(L("، ",", ")):L("مفيش مواعيد فاضية","no free times")}</li>`}).join("");
-    return `${L("المواعيد الفاضية","Free times")}${one?` (${esc(nm(one))})`:cat?` (${catName(cat)})`:""}:<ul>${rows}</ul><span class="note">${L("الميعاد بيتأكد معاكي على واتساب.","Your time is confirmed on WhatsApp.")}</span><div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
+    return `${L("المواعيد الفاضية","Free times")}${one?` (${esc(nm(one))})`:cat?` (${catName(cat)})`:""}:<ul>${rows}</ul><span class="note">${fresh===false?L("مقدرناش نتأكد من المواعيد دلوقتي، والفريق هيأكدلك على واتساب.","We couldn't check live times right now; the team will confirm on WhatsApp."):L("الميعاد بيتأكد معاكي على واتساب.","Your time is confirmed on WhatsApp.")}</span><div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
   }
   if(is("cancel"))return `${esc(t("faqs")[0][1])}<div class="acts">${waBtn(L("أهلاً Bloom 🌸 عايزة أغير/ألغي ميعادي","Hi Bloom 🌸 I need to change/cancel my appointment"))}</div>`;
   if(is("pay"))return `${L(`العربون ${N(CFG.deposit)} جنيه بإنستاباي على`,`The deposit is ${CFG.deposit} EGP by InstaPay to`)} <span class="num">${esc(CFG.instapay)}</span>. ${L("بيتخصم من الحساب يوم الميعاد. وتقدري تدفعي كاش في الصالون.","It comes off your bill on the day. You can also pay cash at the salon.")}<div class="acts">${bookBtn("",cat)}</div>`;
   if(is("allergy"))return `${esc(t("patchTxt"))} ${L("اكتبي أي حساسية في خانة الملاحظات وانتي بتحجزي، والفريق هيراجعها معاكي.","Write any allergy in the notes when you book and the team will go through it with you.")}<div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
   if(is("care")){const c=cat&&CARE[cat]?cat:"lashes";return `<b>${L("العناية","Aftercare")} — ${catName(c)}</b><ul>${CARE[c][lang].map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`}
-  if(is("refill")&&!svcs.length||(is("refill")&&cat==="lashes"&&!is("price"))){const nr=nextRefill();return nr?`${L("ميعاد التعبئة الجاي","Your next refill")}: <b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}<div class="acts"><button type="button" data-ab-book="${esc(nr.svc.id||"")}" data-ab-cat="lashes">${L("احجزي التعبئة","Book the refill")}</button></div>`:`${L("التعبئة كل ١٠–١٤ يوم.","Refills every 10–14 days.")}<ul>${MENU.filter(m=>m.cat==="lashes"&&/refill|refresh|تعبئ/i.test(m.en+m.ar)).map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul><div class="acts">${bookBtn("","lashes")}</div>`}
+  if(is("refill")&&!svcs.length||(is("refill")&&cat==="lashes"&&!is("price"))){const nr=nextRefill();return nr?`${L("ميعاد التعبئة الجاي","Your next refill")}: <b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}<div class="acts"><button type="button" data-ab-book="${esc(nr.svc.id||"")}" data-ab-cat="lashes">${L("احجزي التعبئة","Book the refill")}</button></div>`:`${L("التعبئة كل ١٠–١٤ يوم.","Refills every 10–14 days.")}<ul>${MENU.filter(m=>m.cat==="lashes"&&/refill|refresh|تعبئ/i.test(m.en+m.ar)).map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul>${estNote()}<div class="acts">${bookBtn("","lashes")}</div>`}
   if(is("hours")){const open=!CFG.closedDays.includes(dowOf(cairoToday()));const h=cairoHour();const now=open&&h>=CFG.open&&h<CFG.shopClose;return `${esc(t("hoursTxt"))}.<br>${now?L("✅ إحنا فاتحين دلوقتي.","✅ We're open now."):open?L("النهارده يوم شغل.","We're open today."):L("النهارده الاتنين، إحنا مقفولين. نشوفك بكره!","It's Monday, we're closed today. See you tomorrow!")}<div class="acts">${bookBtn("",cat)}</div>`}
   if(is("loc"))return `${L("٣٣ شارع كرداحي، كفر عبده، الإسكندرية","33 Kerdahy Street, Kafr Abdo, Alexandria")}<div class="acts"><a href="${CFG.maps}" target="_blank" rel="noopener">${t("map")}</a></div>`;
-  if(cat==="offers"||(is("price")&&!svcs.length&&has(q,KW.offers))){const o=MENU.filter(m=>m.cat==="offers");return `<b>${L("عروض The perfect pair","The perfect pair offers")}</b><ul>${o.map(m=>`<li>${fmtP(m)}${m.was?` <s>${N(m.was)}</s>`:""}</li>`).join("")}</ul><div class="acts">${bookBtn("","offers")}</div>`}
+  if(cat==="offers"||(is("price")&&!svcs.length&&has(q,KW.offers))){const o=MENU.filter(m=>m.cat==="offers");return `<b>${L("عروض The perfect pair","The perfect pair offers")}</b><ul>${o.map(m=>`<li>${fmtP(m)}${m.was?` <s>${N(m.was)}</s>`:""}</li>`).join("")}</ul>${estNote()}<div class="acts">${bookBtn("","offers")}</div>`}
   if(svcs.length&&(is("price")||is("book")||!Object.keys(IN).some(is))){
     const list=svcs.slice(0,8);
-    return `<b>${one?esc(nm(one)):catName(cat)}</b><ul>${list.map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul>${LIVE?"":`<span class="note">${esc(t("estPrices"))}</span>`}<div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
+    return `<b>${one?esc(nm(one)):catName(cat)}</b><ul>${list.map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul>${estNote()}<div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
   }
-  if(is("price")){const rows=CATS.filter(c=>c[0]!=="offers").map(c=>{const ms=MENU.filter(m=>m.cat===c[0]);return ms.length?`<li>${L(c[1],c[2])}: ${L("من","from")} <b>${N(Math.min(...ms.map(m=>m.price)))} ${t("egp")}</b></li>`:""}).join("");return `${L("أسعارنا","Our prices")}<ul>${rows}</ul>${L("اسأليني عن خدمة معينة، مثلاً «بكام الرموش السيلك؟»","Ask about one service, e.g. “how much are silk lashes?”")}<div class="acts">${bookBtn("","")}</div>`}
+  if(is("price")){const rows=CATS.filter(c=>c[0]!=="offers").map(c=>{const ms=MENU.filter(m=>m.cat===c[0]);return ms.length?`<li>${L(c[1],c[2])}: ${L("من","from")} <b>${N(Math.min(...ms.map(m=>m.price)))} ${t("egp")}</b></li>`:""}).join("");return `${L("أسعارنا","Our prices")}<ul>${rows}</ul>${estNote()}${L("اسأليني عن خدمة معينة، مثلاً «بكام الرموش السيلك؟»","Ask about one service, e.g. “how much are silk lashes?”")}<div class="acts">${bookBtn("","")}</div>`}
   if(is("book"))return `${L("تمام! اختاري الخدمة والميعاد في دقيقة.","Great! Pick your service and time in a minute.")}<div class="acts">${bookBtn("",cat)}</div>`;
   if(is("human"))return `${L("فريق Bloom بيرد على واتساب","The Bloom team answers on WhatsApp")}: <span class="num">${CFG.phone}</span><div class="acts">${waBtn()}<a href="tel:${CFG.phone}">${L("اتصلي","Call")}</a></div>`;
   if(is("greet"))return L(`أهلاً بيكي${me.name?" يا "+esc(me.name.split(" ")[0]):""} 🌸 أنا مساعدة Bloom. اسأليني عن الأسعار، المواعيد الفاضية، العروض، العنوان أو العناية بعد الجلسة.`,`Hi${me.name?" "+esc(me.name.split(" ")[0]):""} 🌸 I'm Bloom's assistant. Ask me about prices, free times, offers, the address or aftercare.`);
@@ -553,19 +554,42 @@ function renderChat(){
     if(sending)return;
     const it=MENU.find(m=>m.id===b.dataset.abBook);
     Object.assign(st,{reqId:"",step:0,picked:it?[it]:[],style:"",day:"",time:"",note:"",friend:"",first:false,pay:"instapay",sentOnline:false,rejected:"",consent:false,cat:it?it.cat:(b.dataset.abCat||st.cat),tab:"book"});
-    AB.open=false;render();scrollTo(0,0)});
+    setChat(false);render();scrollTo(0,0)});
 }
+function takenNow(){
+  if(!API)return Promise.resolve(true);
+  return fetch(API.url+"/rest/v1/rpc/bloom_taken_slots",{method:"POST",headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json"},body:"{}"})
+    .then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)){TAKEN=rows;return true}return false}).catch(()=>false)}
 function ask(text){
   const v=String(text||"").trim().slice(0,200);if(!v)return;
-  AB.log.push({who:"me",text:v});AB.log.push({who:"bot",html:answer(v)});
+  AB.log.push({who:"me",text:v});
+  const q=normA(v),avail=has(q,IN.avail)||(has(q,IN.book)&&/النهارده|انهارده|بكره|بكرا|today|tomorrow/.test(q));
+  if(avail){
+    const msg={who:"bot",html:L("لحظة، بشوف المواعيد الفاضية…","One moment, checking free times…")};AB.log.push(msg);renderChat();
+    takenNow().then(ok=>{msg.html=answer(v,ok);renderChat()});
+  } else AB.log.push({who:"bot",html:answer(v)});
   if(AB.log.length>40)AB.log.splice(0,AB.log.length-40);
-  if(has(normA(v),IN.avail))loadTaken();
   renderChat();
 }
-$("#askfab").onclick=()=>{if(sending)return;AB.open=true;loadTaken();renderChat();setTimeout(()=>{const i=$("#cq");if(i&&matchMedia("(pointer:fine)").matches)i.focus()},50)};
-$("#chat-x").onclick=()=>{AB.open=false;renderChat()};
-$("#chatwrap").onclick=e=>{if(e.target.id==="chatwrap"){AB.open=false;renderChat()}};
-addEventListener("keydown",e=>{if(e.key==="Escape"&&AB.open){AB.open=false;renderChat()}});
+const BG=()=>[".hero",".app.pad","#action","nav.tabbar","footer","#askfab"].map(x=>document.querySelector(x)).filter(Boolean);
+function setChat(open){
+  AB.open=open;BG().forEach(el=>{if(open){el.inert=true;el.setAttribute("aria-hidden","true")}else{el.inert=false;el.removeAttribute("aria-hidden")}});
+  renderChat();
+  if(open)setTimeout(()=>{const f=matchMedia("(pointer:fine)").matches?$("#cq"):$("#chat-x");if(f)f.focus()},30);
+  else{const b=$("#askfab");if(b&&!b.hidden)b.focus()}
+}
+$("#askfab").onclick=()=>{if(sending)return;setChat(true)};
+$("#chat-x").onclick=()=>setChat(false);
+$("#chatwrap").onclick=e=>{if(e.target.id==="chatwrap")setChat(false)};
+addEventListener("keydown",e=>{
+  if(!AB.open)return;
+  if(e.key==="Escape"){setChat(false);return}
+  if(e.key==="Tab"){const f=[...document.querySelectorAll("#chatwrap button,#chatwrap a[href],#chatwrap input")].filter(x=>!x.disabled&&x.offsetParent!==null);if(!f.length)return;
+    const first=f[0],last=f[f.length-1];
+    if(!document.querySelector("#chatwrap").contains(document.activeElement)){e.preventDefault();first.focus()}
+    else if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+    else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}}
+});
 $("#cform").onsubmit=e=>{e.preventDefault();const i=$("#cq");ask(i.value);i.value=""};
 
 /* ===== events ===== */
