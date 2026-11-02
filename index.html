@@ -515,7 +515,7 @@ function answer(raw,fresh){
   const one=svcs.length===1?svcs[0]:null;
   const is=k=>has(q,IN[k]);
   if(isAvail(q)){
-    const mn=one?one.min:(cat?Math.min(...MENU.filter(m=>m.cat===cat).map(m=>m.min)):60);
+    const mn=svcs.length?Math.max(...svcs.map(m=>m.min)):60;
     const today=cairoToday(),tom=addDays(today,1);
     const day=(q.includes("بكره")||q.includes("بكرا")||q.includes("tomorrow"))?[tom]:[today,tom];
     const rows=day.map(d=>{const h=slotsFor(d,mn);return `<li><b>${esc(fmtDay(d))}:</b> ${h.length?h.slice(0,6).map(hourLabel).join(L("، ",", ")):L("مفيش مواعيد فاضية","no free times")}</li>`}).join("");
