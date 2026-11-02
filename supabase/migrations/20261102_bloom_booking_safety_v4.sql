@@ -3,7 +3,8 @@
 -- Fix (Medium): changing a booking's status (new -> confirmed -> arrived), day or time no longer
 -- re-prices it. When the services are not edited, the stored prices, total and length are kept and
 -- the opening-hours and overlap checks use the stored length. Prices are recalculated only when
--- the services themselves are changed.
+-- the services themselves are changed. A direct edit of minutes or total alone is undone (stored
+-- values restored) and re-checked, so a booking cannot be stretched over another one.
 
 create or replace function public.bloom_check_request() returns trigger
 language plpgsql security definer set search_path = public as $$
@@ -14,6 +15,7 @@ declare
 begin
   -- staff updates that do not move the booking or reactivate it need no new check
   if tg_op = 'UPDATE' and new.day = old.day and new.time = old.time and new.services = old.services
+     and new.minutes is not distinct from old.minutes and new.total is not distinct from old.total
      and (new.status = old.status or new.status not in ('new','confirmed','arrived')) then
     return new;
   end if;
