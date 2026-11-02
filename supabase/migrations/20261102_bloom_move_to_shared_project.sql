@@ -56,6 +56,7 @@ begin
      and (new.status = old.status or new.status not in ('new','confirmed','arrived')) then
     return new;
   end if;
+  if tg_op = 'INSERT' then new.created_at := now(); end if;  -- clients cannot backdate to dodge rate limits
   if new.time !~ '^[0-9]{1,2}$' then raise exception 'bloom: bad time'; end if;
   h := new.time::int;
   if h < 13 or h > 19 then raise exception 'bloom: outside opening hours'; end if;
