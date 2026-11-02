@@ -74,7 +74,7 @@ let MENU=[
  {id:"p5",cat:"lashes",ar:"رموش سيلك",en:"Silk lashes",price:700},{id:"p18",cat:"lashes",ar:"رموش سيلك فوليوم بريميوم",en:"Premium silk volume set",price:1300},
  {id:"p6",cat:"brows",ar:"لامينيشن حواجب",en:"Brow lamination",price:500},{id:"p8",cat:"nails",ar:"جل",en:"Gel nails",price:450},
  {id:"p10",cat:"nails",ar:"هارد جل",en:"Hard gel",price:850},{id:"p14",cat:"pedi",ar:"باديكير",en:"Pedicure",price:200},{id:"p16",cat:"pedi",ar:"مانيكير + باديكير",en:"Mani + pedi",price:500}];
-const OFFERS=[{ar:"رموش شهرية + باديكير",en:"Monthly lashes + pedicure",price:600,was:800},{ar:"رموش أسبوعية + سوفت جل",en:"Weekly lashes + soft gel",price:750,was:950},{ar:"أظافر صناعية + باديكير",en:"Fake nails + pedicure",price:550,was:700},{ar:"رموش شهرية + أظافر صناعية",en:"Monthly lashes + fake nails",price:850,was:1100},{ar:"لامينيشن حواجب + ليفتنج رموش",en:"Brow lamination + lash lift",price:850,was:1100}];
+let OFFERS=[{ar:"رموش شهرية + باديكير",en:"Monthly lashes + pedicure",price:600,was:800},{ar:"رموش أسبوعية + سوفت جل",en:"Weekly lashes + soft gel",price:750,was:950},{ar:"أظافر صناعية + باديكير",en:"Fake nails + pedicure",price:550,was:700},{ar:"رموش شهرية + أظافر صناعية",en:"Monthly lashes + fake nails",price:850,was:1100},{ar:"لامينيشن حواجب + ليفتنج رموش",en:"Brow lamination + lash lift",price:850,was:1100}];
 const CATS={lashes:["رموش","Lashes"],brows:["حواجب","Brows"],nails:["أظافر","Nails"],pedi:["باديكير","Pedicure"]};
 const STYLES=[["كلاسيك","Classic","رمش لكل رمش، طبيعي وهادي","One lash per lash, soft and natural"],["هايبرد","Hybrid","خليط بين الطبيعي والكثافة","Natural meets fuller"],["سيلك","Silk","ناعمة ولامعة وخفيفة","Silky, glossy and light"],["فوليوم","Volume","كثافة واضحة وإطلالة جريئة","Full, dramatic and bold"]];
 const CARE=[["رموشك تعيش أطول 🤍","Make your lashes last 🤍",["متبليش الرموش أول ٢٤ ساعة","ابعدي عن الزيوت حوالين العين","سرّحيها كل يوم بالفرشاة","التعبئة كل ١٠–١٤ يوم"],["Keep them dry for 24 hours","No oils around the eyes","Brush them every day","Refill every 10–14 days"]],
@@ -88,7 +88,7 @@ function build(l){const A=l==="ar";const nm=x=>A?x.ar:x.en;
  const top=c=>MENU.filter(m=>m.cat===c).slice(0,4);
  return [
   `<div class="kick">${A?"أهلاً بيكي في":"WELCOME TO"}</div><h1 class="serif">Bloom Nails &amp; Lashes</h1><p>${A?"رموش وأظافر وحواجب بإيد فنانات، في قلب كفر عبده. اقعدي واسترخي، إنتي في أمان 🌸":"Lashes, nails and brows by real artists, in the heart of Kafr Abdo. Sit back and relax 🌸"}</p>`,
-  `<div class="kick">${A?"عروض The perfect pair":"THE PERFECT PAIR"}</div><h1>${A?"خدمتين بسعر أقل":"Two services for less"}</h1><ul class="list">${OFFERS.slice(0,4).map(o=>`<li><span>${esc(nm(o))}</span><span class="price"><s>${N(o.was,l)}</s>${egp(o.price,l)}</span></li>`).join("")}</ul>`,
+  `<div class="kick">${A?"عروض The perfect pair":"THE PERFECT PAIR"}</div><h1>${A?"خدمتين بسعر أقل":"Two services for less"}</h1><ul class="list">${OFFERS.slice(0,4).map(o=>`<li><span>${esc(nm(o))}</span><span class="price">${o.was?`<s>${N(o.was,l)}</s>`:""}${egp(o.price,l)}</span></li>`).join("")}</ul>`,
   `<div class="kick">${A?"ستايلات الرموش":"LASH STYLES"}</div><h1>${A?"اختاري إطلالتك":"Choose your look"}</h1><div class="grid4">${STYLES.map(s=>`<div><b>${A?s[0]:s[1]}</b><span>${A?s[2]:s[3]}</span></div>`).join("")}</div>`,
   `<div class="kick">${A?"الرموش":"LASHES"}</div><h1>${A?"رموش من":"Lashes from"} ${egp(from("lashes")||250,l)}</h1><ul class="list">${top("lashes").map(m=>`<li><span>${esc(nm(m))}</span><span class="price">${egp(m.price,l)}</span></li>`).join("")}</ul>`,
   `<div class="kick">${A?"أظافر وحواجب وباديكير":"NAILS · BROWS · PEDICURE"}</div><h1>${A?"كل حاجة في مكان واحد":"All in one place"}</h1><ul class="list">${["nails","brows","pedi"].map(c=>from(c)!=null?`<li><span>${CATS[c][A?0:1]}</span><span class="price">${A?"من":"from"} ${egp(from(c),l)}</span></li>`:"").join("")}</ul>`,
@@ -109,7 +109,7 @@ function tick(){const now=new Date();
  const h=+now.toLocaleString("en-GB",{timeZone:TZ,hour:"2-digit",hour12:false}),dow=new Date(now.toLocaleDateString("en-CA",{timeZone:TZ})+"T12:00:00Z").getUTCDay();
  const on=dow!==CLOSED_DOW&&h>=OPEN&&h<CLOSE;
  document.getElementById("open").innerHTML=`<span class="${on?"on":"off"}">${on?(lang==="ar"?"مفتوح لحد ٨ بالليل":"Open until 8 pm"):(lang==="ar"?"مواعيدنا ١ الضهر – ٨ بالليل · الاتنين إجازة":"Open 1–8 pm · closed Monday")}</span>`}
-function live(){if(!API)return;fetch(API.url+"/rest/v1/services?active=eq.true&select=id,cat,name_ar,name_en,price&order=sort",{headers:{apikey:API.key,Authorization:"Bearer "+API.key}}).then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)&&rows.length){MENU=rows.filter(r=>CATS[r.cat]&&+r.price>0).map(r=>({id:r.id,cat:r.cat,ar:r.name_ar,en:r.name_en,price:+r.price}));render()}}).catch(()=>{})}
+function live(){if(!API)return;fetch(API.url+"/rest/v1/services?active=eq.true&select=*&order=sort",{headers:{apikey:API.key,Authorization:"Bearer "+API.key}}).then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)&&rows.length){MENU=rows.filter(r=>CATS[r.cat]&&+r.price>0).map(r=>({id:r.id,cat:r.cat,ar:r.name_ar,en:r.name_en,price:+r.price}));const lo=rows.filter(r=>r.cat==="offers"&&+r.price>0);if(lo.length)OFFERS=lo.map(r=>({ar:r.name_ar,en:r.name_en,price:+r.price,was:+r.was||0}));render()}}).catch(()=>{})}
 render();tick();live();
 setInterval(next,SLIDE_MS);setInterval(tick,15000);setInterval(live,30*60000);
 setTimeout(()=>{const h=document.getElementById("hint");if(h)h.style.opacity=0},8000);
@@ -117,5 +117,6 @@ const fs=()=>{const d=document.documentElement;if(!document.fullscreenElement&&d
 addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" ")fs()});addEventListener("click",fs);
 })();
 </script>
+<script>if("serviceWorker" in navigator){addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}))}</script>
 </body>
 </html>
