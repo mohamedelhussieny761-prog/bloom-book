@@ -381,7 +381,7 @@ function vTime(){
   ${st.day?`<div class="times" role="group">${hrs.map(h=>{const busy=isTaken(st.day,h);return `<button class="chip" data-time="${h}" aria-pressed="${st.time===String(h)}" ${busy?"disabled":""}>${hourLabel(h)}${busy?" · "+t("busy"):""}</button>`}).join("")}</div><p class="note">${t("confirmWA")}</p>`:""}
   </section>`;
 }
-function loadTaken(){if(!API)return;fetch(API.url+"/rest/v1/rpc/bloom_taken_slots",{method:"POST",headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json"},body:"{}"}).then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)){TAKEN=rows;if(st.tab==="book"&&st.step===1)render()}}).catch(()=>{})}
+function loadTaken(){if(!API)return;fetch(API.url+"/rest/v1/rpc/bloom_taken_slots",{method:"POST",headers:{apikey:API.key,"Accept-Profile":API.schema||"public","Content-Profile":API.schema||"public",Authorization:"Bearer "+API.key,"Content-Type":"application/json"},body:"{}"}).then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)){TAKEN=rows;if(st.tab==="book"&&st.step===1)render()}}).catch(()=>{})}
 function vInfoStep(){
   return `<section><h2>${t("you")}</h2><div class="card grid">
    <label for="f-name">${t("name")}<input id="f-name" autocomplete="name" value="${esc(st.name)}"></label>
@@ -565,7 +565,7 @@ function renderChat(){
 }
 function takenNow(){
   if(!API)return Promise.resolve(true);
-  return fetch(API.url+"/rest/v1/rpc/bloom_taken_slots",{method:"POST",headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json"},body:"{}"})
+  return fetch(API.url+"/rest/v1/rpc/bloom_taken_slots",{method:"POST",headers:{apikey:API.key,"Accept-Profile":API.schema||"public","Content-Profile":API.schema||"public",Authorization:"Bearer "+API.key,"Content-Type":"application/json"},body:"{}"})
     .then(r=>r.ok?r.json():null).then(rows=>{if(Array.isArray(rows)){TAKEN=rows;return true}return false}).catch(()=>false)}
 function ask(text){
   const v=String(text||"").trim().slice(0,200);if(!v)return;
@@ -638,7 +638,7 @@ async function confirmBooking(){
     const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),15000);
     const body={services:snap.picked.map(p=>({id:p.id,name:p.ar,price:p.price})),lash_style:snap.style||null,day:snap.day,time:snap.time,name:snap.name.trim(),phone:snap.phone,friend:snap.friend||null,first_visit:snap.first,note:snap.note||null,pay:snap.pay,total:snap.picked.reduce((a,p)=>a+p.price,0),lang,consent:true,consent_at:new Date().toISOString()};
     if(CFG.serverV2)body.request_id=snap.reqId;
-    try{const r=await fetch(API.url+"/rest/v1/booking_requests",{method:"POST",signal:ctl.signal,headers:{apikey:API.key,Authorization:"Bearer "+API.key,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(body)});
+    try{const r=await fetch(API.url+"/rest/v1/booking_requests",{method:"POST",signal:ctl.signal,headers:{apikey:API.key,"Accept-Profile":API.schema||"public","Content-Profile":API.schema||"public",Authorization:"Bearer "+API.key,"Content-Type":"application/json",Prefer:"return=minimal"},body:JSON.stringify(body)});
       st.sentOnline=r.ok||r.status===409; /* 409 = this same request already arrived */
       if(!r.ok&&r.status!==409){const txt=await r.text().catch(()=>"");if(REJECT_SLOT.test(txt))st.rejected="slot";else if(/unknown service/.test(txt))st.rejected="service"}
     }catch(e){st.sentOnline=false}finally{clearTimeout(tm)}
@@ -676,7 +676,7 @@ function reconcile(){ /* align chosen services with the live menu; never while a
   if(st.picked.length<n&&st.tab==="book"&&st.step>0&&st.step<4){st.step=0;st.consent=false;st.time=""}
   else if(mins()!==before||(st.time&&!slotOk()))st.time="";
   render()}
-if(API){fetch(API.url+"/rest/v1/services?active=eq.true&select=*&order=sort",{headers:{apikey:API.key,Authorization:"Bearer "+API.key}}).then(r=>r.ok?r.json():null).then(rows=>{if(rows&&rows.length){LIVE=true;MENU=rows.map(r=>({id:r.id,cat:r.cat,ar:r.name_ar,en:r.name_en,price:r.price,min:r.minutes,fill:r.fill||0,style:!!r.style}));if(!MENU.some(m=>m.cat==="offers"))MENU=OFFERS.concat(MENU);reconcile()}}).catch(()=>{});loadTaken()}
+if(API){fetch(API.url+"/rest/v1/services?active=eq.true&select=*&order=sort",{headers:{apikey:API.key,"Accept-Profile":API.schema||"public","Content-Profile":API.schema||"public",Authorization:"Bearer "+API.key}}).then(r=>r.ok?r.json():null).then(rows=>{if(rows&&rows.length){LIVE=true;MENU=rows.map(r=>({id:r.id,cat:r.cat,ar:r.name_ar,en:r.name_en,price:r.price,min:r.minutes,fill:r.fill||0,style:!!r.style}));if(!MENU.some(m=>m.cat==="offers"))MENU=OFFERS.concat(MENU);reconcile()}}).catch(()=>{});loadTaken()}
 render();
 })();
 </script>
