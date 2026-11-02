@@ -436,7 +436,7 @@ function vMe(){
     <div class="stamps">${Array.from({length:CFG.loyal},(_,i)=>`<span class="stamp ${i<n?"on":""}">${i===CFG.loyal-1?"🎁":i<n?"🌸":""}</span>`).join("")}</div>
     <p class="note"><b>${N(n)}/${N(CFG.loyal)}</b> ${t("stampsOf")} · ${nextFree?t("free"):t("toFree").replace("{n}",N(CFG.loyal-1-n))}</p></div>
    <div class="card"><h3>${t("nextRefill")}</h3><p class="note">${nr?`<b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}`:t("noRefill")}</p>${nr?`<div style="margin-top:10px"><button class="go" data-rebook="${nr.i}">${t("bookAgain")}</button></div>`:""}</div>
-   <div class="card"><h3>${t("history")}</h3>${me.bookings.length?`<div class="hist">${me.bookings.slice(0,10).map(b=>`<div class="hrow"><span>${esc(b[lang]||b.ar)}</span><span>${esc(fmtDay(b.day))}</span></div>`).join("")}</div>`:`<p class="note">${t("noHist")}</p>`}</div>
+   <div class="card"><h3>${t("history")}</h3>${me.bookings.length?`<div class="hist">${me.bookings.slice(0,10).map(b=>`<div class="hrow"><span>${esc(b[lang]||b.ar)}</span><span>${esc(fmtDay(b.day))}${b.day>=cairoToday()?` · <a href="https://wa.me/${CFG.wa}?text=${encodeURIComponent(changeMsg(b))}" target="_blank" rel="noopener" style="color:var(--rose);font-weight:700">${L("تغيير أو إلغاء","Change or cancel")}</a>`:""}</span></div>`).join("")}${me.bookings.some(b=>b.day>=cairoToday())?`<p class="note" style="margin:8px 0 0">${L("التغيير أو الإلغاء قبل الميعاد بـ ٢٤ ساعة على الأقل بيحافظ على العربون.","Changing or cancelling at least 24 hours ahead keeps your deposit.")}</p>`:""}</div>`:`<p class="note">${t("noHist")}</p>`}</div>
    <p class="note">${t("localNote")}</p>
   </section>`;
 }
@@ -540,6 +540,7 @@ function answer(raw,fresh){
   return `${L("مش متأكدة فهمت سؤالك 🙈 جربي واحدة من الاختيارات تحت، أو كلمي الفريق.","I'm not sure I got that 🙈 Try one of the options below, or message the team.")}<div class="acts">${waBtn(raw)}</div>`;
 }
 function nextLashRefill(){const b=me.bookings.find(x=>x.fill&&(x.lash||(MENU.find(m=>m.id===x.svc)||{}).cat==="lashes"));if(!b)return null;const svc=MENU.find(m=>m.id===b.svc)||{id:b.svc,ar:b.ar,en:b.en};return {date:addDays(b.day,b.fill),svc}}
+function changeMsg(b){return L(`السلام عليكم 🌸 أنا ${me.name||""}، عايزة أغيّر أو ألغي ميعادي يوم ${fmtDay(b.day)} لـ${b.ar||b.en||""}. شكرًا`,`Hello Bloom 🌸 This is ${me.name||""}. I'd like to change or cancel my appointment on ${fmtDay(b.day)} for ${b.en||b.ar||""}. Thank you`)}
 const QUICK=()=>lang==="ar"?["بكام الرموش؟","مواعيد فاضية النهارده","العروض","العنوان","العربون","العناية بالرموش"]:["Lash prices","Free times today","Offers","Address","Deposit","Lash aftercare"];
 function renderChat(){
   const fab=$("#askfab");fab.hidden=AB.open||sending||(st.tab==="book"&&st.step<4);
