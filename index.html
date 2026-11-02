@@ -136,6 +136,29 @@ a.btnlink,.cp{font:inherit;font-weight:800;border-radius:999px;padding:11px 18px
 footer{text-align:center;color:var(--gold);font-size:11.5px;letter-spacing:.14em;padding-block:18px;direction:ltr;font-family:var(--f-en)}
 button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--rose);outline-offset:2px}
 @media (prefers-reduced-motion:no-preference){main>section{animation:in .22s ease-out}@keyframes in{from{transform:translateY(6px)}to{transform:none}}}
+
+/* ===== Ask Bloom (receptionist) ===== */
+.askfab{position:fixed;inset-inline-end:max(16px,calc(50% - 264px));bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:8;font:inherit;font-weight:800;font-size:14.5px;border:0;border-radius:999px;padding:11px 16px;background:var(--btn);color:var(--btn-ink);box-shadow:0 6px 18px rgba(20,16,18,.22);cursor:pointer;display:flex;gap:6px;align-items:center}
+.askfab[hidden]{display:none}
+.chatwrap{position:fixed;inset:0;z-index:20;background:rgba(20,16,18,.38);display:flex;align-items:flex-end;justify-content:center}
+.chatwrap[hidden]{display:none}
+.chat{width:100%;max-width:560px;height:min(78vh,640px);background:var(--bg);border-radius:22px 22px 0 0;display:flex;flex-direction:column;overflow:hidden;padding-bottom:env(safe-area-inset-bottom,0px)}
+.chat header{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--pink);color:#141012}
+.chat header b{font-size:16px}.chat header small{display:block;font-size:12px;color:#5a4a50}
+.chat header button{margin-inline-start:auto;font:inherit;font-weight:800;border:0;background:transparent;color:#141012;font-size:22px;line-height:1;cursor:pointer;padding:4px 8px}
+.clog{flex:1;overflow-y:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.bub{max-width:86%;padding:10px 13px;border-radius:16px;font-size:14.5px;line-height:1.55;overflow-wrap:anywhere}
+.bub.me{align-self:flex-end;background:var(--btn);color:var(--btn-ink);border-end-end-radius:4px}
+.bub.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-end-start-radius:4px}
+.bub ul{margin:6px 0 0;padding-inline-start:18px}.bub li{margin:2px 0}
+.bub .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.bub .acts a,.bub .acts button{font:inherit;font-size:13px;font-weight:800;border-radius:999px;padding:7px 12px;border:1px solid var(--rose);background:transparent;color:var(--rose);cursor:pointer;text-decoration:none}
+.qchips{display:flex;gap:6px;overflow-x:auto;padding:8px 16px 0;scrollbar-width:none}
+.qchips button{flex:0 0 auto;font:inherit;font-size:13px;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.cin{display:flex;gap:8px;padding:10px 16px 12px}
+.cin input{flex:1;min-width:0;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:var(--surface);color:var(--ink)}
+.cin button{font:inherit;font-weight:800;border:0;border-radius:999px;padding:0 16px;background:var(--btn);color:var(--btn-ink);cursor:pointer}
+.cpriv{font-size:11.5px;color:var(--muted);text-align:center;padding:0 16px 6px}
 </style>
 <script src="config.js"></script>
 </head>
@@ -154,6 +177,14 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
   <div style="display:flex;gap:4px;align-items:center"><button class="ghost" id="back" type="button"></button><button class="go" id="next" type="button"></button></div>
 </div></div>
 <nav class="tabbar" aria-label="Bloom"><div class="in" id="tabbar"></div></nav>
+<button class="askfab" id="askfab" type="button" hidden></button>
+<div class="chatwrap" id="chatwrap" hidden><div class="chat" role="dialog" aria-modal="true" aria-labelledby="chat-t">
+  <header><span aria-hidden="true" style="font-size:24px">🌸</span><div><b id="chat-t"></b><small id="chat-s"></small></div><button id="chat-x" type="button" aria-label="close">×</button></header>
+  <div class="clog" id="clog" aria-live="polite"></div>
+  <div class="qchips" id="qchips"></div>
+  <form class="cin" id="cform" autocomplete="off"><input id="cq" maxlength="200"><button type="submit" id="csend"></button></form>
+  <div class="cpriv" id="cpriv"></div>
+</div></div>
 <footer class="pad">BLOOM NAILS &amp; LASHES · A MERIDIAN ZERO COMPANY</footer>
 
 <script>
@@ -281,6 +312,7 @@ function render(){
   }
   bind();
   if(sending)lockUI(true);
+  renderChat();
 }
 function ok(){return [st.picked.length>0&&(!needStyle()||st.style),slotOk(),st.name.trim().length>1&&/^01\d{9}$/.test(st.phone),st.consent][st.step]}
 const needStyle=()=>st.picked.some(p=>p.style);
@@ -421,6 +453,120 @@ function vInfo(){
    <div><h3>${t("faq")}</h3>${t("faqs").map(([q,a])=>`<details><summary>${esc(q)}</summary><p>${esc(a)}</p></details>`).join("")}</div>
   </section>`;
 }
+
+/* ===== Ask Bloom: on-device receptionist (no message leaves the phone) ===== */
+const L=(ar,en)=>lang==="ar"?ar:en;
+const AB={open:false,log:[]};
+const normA=x=>String(x||"").toLowerCase().replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
+const has=(q,words)=>words.some(w=>/^[a-z ]{1,4}$/.test(w)?new RegExp("(^|[^a-z])"+w+"([^a-z]|$)").test(q):q.includes(normA(w)));
+const KW={
+ lashes:["رموش","رمش","lash","eyelash","سيلك","silk","فوليوم","volume","كلاسيك","classic","هايبرد","hybrid","اكستنشن","extension"],
+ brows:["حواجب","حاجب","brow","لامينيشن","lamination"],
+ nails:["اظافر","ضوافر","صوابع","nail","جل","gel","مانيكير","manicure","مونيكير"],
+ pedi:["باديكير","بديكير","pedicure","pedi","قدم","feet","foot"],
+ offers:["عرض","عروض","خصم","offer","deal","discount","promo"]
+};
+const IN={
+ greet:["اهلا","هاي","هلا","سلام","مساء","صباح","hi","hello","hey","good morning","good evening"],
+ human:["واتس","whatsapp","كلم","اكلم","موظف","حد يرد","human","call","phone","تليفون","رقم"],
+ avail:["فاضي","فاضيه","متاح","available","free time","free slot","slot","النهارده","انهارده","بكره","بكرا","today","tomorrow","اقرب ميعاد","earliest"],
+ hours:["مواعيد","ساعات","بتفتحو","بتقفلو","فاتحين","مفتوح","مقفول","الاتنين","اجازه","hours","open","close","monday","when are you"],
+ loc:["فين","عنوان","مكان","لوكيشن","خريطه","location","where","address","map","directions"],
+ pay:["عربون","دفع","ادفع","انستاباي","instapay","deposit","pay","cash","كاش","فيزا","visa","card"],
+ cancel:["الغاء","الغي","الغى","اغير الميعاد","تغيير","اأجل","اجل","cancel","reschedule","refund","يترد","استرجاع"],
+ care:["عنايه","احافظ","بعد الجلسه","aftercare","care","last longer","تعيش"],
+ price:["بكام","سعر","اسعار","كام","تمن","price","cost","how much","menu","منيو","قائمه"],
+ book:["احجز","حجز","ميعاد","book","appointment","reserve"],
+ refill:["تعبئه","refill","fill"],
+ allergy:["حساسيه","حساسة","allergy","allergic","patch","اختبار"]
+};
+const catName=c=>{const x=CATS.find(k=>k[0]===c);return x?L(x[1],x[2]):c};
+const fmtP=m=>`${esc(nm(m))} — <b>${N(m.price)} ${t("egp")}</b> · ${N(m.min)} ${t("minutes")}`;
+const toks=x=>normA(x).split(/[^a-z0-9\u0621-\u064A]+/).map(w=>w.replace(/^(وال|بال|لل|ال)/,"")).filter(w=>w.length>=3);
+function svcHits(q){
+  const cat=Object.keys(KW).find(c=>has(q,KW[c]));
+  const qt=toks(q);
+  const sc=MENU.map(m=>({m,s:toks(m.ar+" "+m.en).filter((w,i,a)=>a.indexOf(w)===i&&qt.includes(w)).length}));
+  const best=Math.max(0,...sc.map(x=>x.s));
+  if(best>0){const top=sc.filter(x=>x.s===best).map(x=>x.m);const pool=cat?MENU.filter(m=>m.cat===cat):MENU;
+    if(top.length<pool.length)return {svcs:top,cat:cat||top[0].cat}}
+  return {svcs:cat?MENU.filter(m=>m.cat===cat):[],cat};
+}
+function slotsFor(day,mn){
+  if(!day||CFG.closedDays.includes(dowOf(day)))return [];
+  const today=cairoToday(),hn=cairoHour(),r=[];
+  for(let h=CFG.open;h<=CFG.close;h++){
+    if(day===today&&h<=hn)continue;
+    if(h*60+mn>CFG.shopClose*60)continue;
+    if(TAKEN.some(x=>x.day===day&&x.start_min<h*60+mn&&x.end_min>h*60))continue;
+    r.push(h)}
+  return r}
+const bookBtn=(svc,cat)=>`<button type="button" data-ab-book="${esc(svc||"")}" data-ab-cat="${esc(cat||"")}">${L("احجزي دلوقتي","Book now")}</button>`;
+const waBtn=txt=>`<a href="https://wa.me/${CFG.wa}?text=${encodeURIComponent(txt||L("أهلاً Bloom 🌸","Hi Bloom 🌸"))}" target="_blank" rel="noopener">${L("كلمي Bloom على واتساب","WhatsApp Bloom")}</a>`;
+function answer(raw){
+  const q=normA(raw);
+  const {svcs,cat}=svcHits(q);
+  const one=svcs.length===1?svcs[0]:null;
+  const is=k=>has(q,IN[k]);
+  if(is("avail")||(is("book")&&(q.includes("النهارده")||q.includes("بكره")||q.includes("today")||q.includes("tomorrow")))){
+    const mn=one?one.min:(cat?Math.min(...MENU.filter(m=>m.cat===cat).map(m=>m.min)):60);
+    const today=cairoToday(),tom=addDays(today,1);
+    const day=(q.includes("بكره")||q.includes("بكرا")||q.includes("tomorrow"))?[tom]:[today,tom];
+    const rows=day.map(d=>{const h=slotsFor(d,mn);return `<li><b>${esc(fmtDay(d))}:</b> ${h.length?h.slice(0,6).map(hourLabel).join(L("، ",", ")):L("مفيش مواعيد فاضية","no free times")}</li>`}).join("");
+    return `${L("المواعيد الفاضية","Free times")}${one?` (${esc(nm(one))})`:cat?` (${catName(cat)})`:""}:<ul>${rows}</ul><span class="note">${L("الميعاد بيتأكد معاكي على واتساب.","Your time is confirmed on WhatsApp.")}</span><div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
+  }
+  if(is("cancel"))return `${esc(t("faqs")[0][1])}<div class="acts">${waBtn(L("أهلاً Bloom 🌸 عايزة أغير/ألغي ميعادي","Hi Bloom 🌸 I need to change/cancel my appointment"))}</div>`;
+  if(is("pay"))return `${L(`العربون ${N(CFG.deposit)} جنيه بإنستاباي على`,`The deposit is ${CFG.deposit} EGP by InstaPay to`)} <span class="num">${esc(CFG.instapay)}</span>. ${L("بيتخصم من الحساب يوم الميعاد. وتقدري تدفعي كاش في الصالون.","It comes off your bill on the day. You can also pay cash at the salon.")}<div class="acts">${bookBtn("",cat)}</div>`;
+  if(is("allergy"))return `${esc(t("patchTxt"))} ${L("اكتبي أي حساسية في خانة الملاحظات وانتي بتحجزي، والفريق هيراجعها معاكي.","Write any allergy in the notes when you book and the team will go through it with you.")}<div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
+  if(is("care")){const c=cat&&CARE[cat]?cat:"lashes";return `<b>${L("العناية","Aftercare")} — ${catName(c)}</b><ul>${CARE[c][lang].map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`}
+  if(is("refill")&&!svcs.length||(is("refill")&&cat==="lashes"&&!is("price"))){const nr=nextRefill();return nr?`${L("ميعاد التعبئة الجاي","Your next refill")}: <b>${esc(fmtDay(nr.date))}</b> — ${esc(nm(nr.svc))}<div class="acts"><button type="button" data-ab-book="${esc(nr.svc.id||"")}" data-ab-cat="lashes">${L("احجزي التعبئة","Book the refill")}</button></div>`:`${L("التعبئة كل ١٠–١٤ يوم.","Refills every 10–14 days.")}<ul>${MENU.filter(m=>m.cat==="lashes"&&/refill|refresh|تعبئ/i.test(m.en+m.ar)).map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul><div class="acts">${bookBtn("","lashes")}</div>`}
+  if(is("hours")){const open=!CFG.closedDays.includes(dowOf(cairoToday()));const h=cairoHour();const now=open&&h>=CFG.open&&h<CFG.shopClose;return `${esc(t("hoursTxt"))}.<br>${now?L("✅ إحنا فاتحين دلوقتي.","✅ We're open now."):open?L("النهارده يوم شغل.","We're open today."):L("النهارده الاتنين، إحنا مقفولين. نشوفك بكره!","It's Monday, we're closed today. See you tomorrow!")}<div class="acts">${bookBtn("",cat)}</div>`}
+  if(is("loc"))return `${L("٣٣ شارع كرداحي، كفر عبده، الإسكندرية","33 Kerdahy Street, Kafr Abdo, Alexandria")}<div class="acts"><a href="${CFG.maps}" target="_blank" rel="noopener">${t("map")}</a></div>`;
+  if(cat==="offers"||(is("price")&&!svcs.length&&has(q,KW.offers))){const o=MENU.filter(m=>m.cat==="offers");return `<b>${L("عروض The perfect pair","The perfect pair offers")}</b><ul>${o.map(m=>`<li>${fmtP(m)}${m.was?` <s>${N(m.was)}</s>`:""}</li>`).join("")}</ul><div class="acts">${bookBtn("","offers")}</div>`}
+  if(svcs.length&&(is("price")||is("book")||!Object.keys(IN).some(is))){
+    const list=svcs.slice(0,8);
+    return `<b>${one?esc(nm(one)):catName(cat)}</b><ul>${list.map(m=>`<li>${fmtP(m)}</li>`).join("")}</ul>${LIVE?"":`<span class="note">${esc(t("estPrices"))}</span>`}<div class="acts">${bookBtn(one&&one.id,cat)}</div>`;
+  }
+  if(is("price")){const rows=CATS.filter(c=>c[0]!=="offers").map(c=>{const ms=MENU.filter(m=>m.cat===c[0]);return ms.length?`<li>${L(c[1],c[2])}: ${L("من","from")} <b>${N(Math.min(...ms.map(m=>m.price)))} ${t("egp")}</b></li>`:""}).join("");return `${L("أسعارنا","Our prices")}<ul>${rows}</ul>${L("اسأليني عن خدمة معينة، مثلاً «بكام الرموش السيلك؟»","Ask about one service, e.g. “how much are silk lashes?”")}<div class="acts">${bookBtn("","")}</div>`}
+  if(is("book"))return `${L("تمام! اختاري الخدمة والميعاد في دقيقة.","Great! Pick your service and time in a minute.")}<div class="acts">${bookBtn("",cat)}</div>`;
+  if(is("human"))return `${L("فريق Bloom بيرد على واتساب","The Bloom team answers on WhatsApp")}: <span class="num">${CFG.phone}</span><div class="acts">${waBtn()}<a href="tel:${CFG.phone}">${L("اتصلي","Call")}</a></div>`;
+  if(is("greet"))return L(`أهلاً بيكي${me.name?" يا "+esc(me.name.split(" ")[0]):""} 🌸 أنا مساعدة Bloom. اسأليني عن الأسعار، المواعيد الفاضية، العروض، العنوان أو العناية بعد الجلسة.`,`Hi${me.name?" "+esc(me.name.split(" ")[0]):""} 🌸 I'm Bloom's assistant. Ask me about prices, free times, offers, the address or aftercare.`);
+  return `${L("مش متأكدة فهمت سؤالك 🙈 جربي واحدة من الاختيارات تحت، أو كلمي الفريق.","I'm not sure I got that 🙈 Try one of the options below, or message the team.")}<div class="acts">${waBtn(raw)}</div>`;
+}
+const QUICK=()=>lang==="ar"?["بكام الرموش؟","مواعيد فاضية النهارده","العروض","العنوان","العربون","العناية بالرموش"]:["Lash prices","Free times today","Offers","Address","Deposit","Lash aftercare"];
+function renderChat(){
+  const fab=$("#askfab");fab.hidden=AB.open||sending||(st.tab==="book"&&st.step<4);
+  fab.innerHTML=`<span aria-hidden="true">💬</span>${L("اسألي Bloom","Ask Bloom")}`;
+  $("#chatwrap").hidden=!AB.open;
+  if(!AB.open)return;
+  $("#chat-t").textContent=L("مساعدة Bloom","Bloom assistant");
+  $("#chat-s").textContent=L("بترد فورًا، ٢٤ ساعة","Instant answers, 24/7");
+  $("#csend").textContent=L("ابعتي","Send");
+  $("#cq").placeholder=L("اكتبي سؤالك…","Type your question…");
+  $("#cpriv").textContent=L("المساعدة بتشتغل على موبايلك، ومفيش رسايل بتتبعت لحد.","The assistant runs on your phone; nothing you type is sent anywhere.");
+  if(!AB.log.length)AB.log.push({who:"bot",html:answer("hi")});
+  $("#clog").innerHTML=AB.log.map(m=>`<div class="bub ${m.who}">${m.who==="me"?esc(m.text):m.html}</div>`).join("");
+  $("#qchips").innerHTML=QUICK().map(q=>`<button type="button" data-q="${esc(q)}">${esc(q)}</button>`).join("");
+  const lg=$("#clog");lg.scrollTop=lg.scrollHeight;
+  document.querySelectorAll("#qchips [data-q]").forEach(b=>b.onclick=()=>ask(b.dataset.q));
+  document.querySelectorAll("#clog [data-ab-book]").forEach(b=>b.onclick=()=>{
+    if(sending)return;
+    const it=MENU.find(m=>m.id===b.dataset.abBook);
+    Object.assign(st,{reqId:"",step:0,picked:it?[it]:[],style:"",day:"",time:"",note:"",friend:"",first:false,pay:"instapay",sentOnline:false,rejected:"",consent:false,cat:it?it.cat:(b.dataset.abCat||st.cat),tab:"book"});
+    AB.open=false;render();scrollTo(0,0)});
+}
+function ask(text){
+  const v=String(text||"").trim().slice(0,200);if(!v)return;
+  AB.log.push({who:"me",text:v});AB.log.push({who:"bot",html:answer(v)});
+  if(AB.log.length>40)AB.log.splice(0,AB.log.length-40);
+  if(has(normA(v),IN.avail))loadTaken();
+  renderChat();
+}
+$("#askfab").onclick=()=>{if(sending)return;AB.open=true;loadTaken();renderChat();setTimeout(()=>{const i=$("#cq");if(i&&matchMedia("(pointer:fine)").matches)i.focus()},50)};
+$("#chat-x").onclick=()=>{AB.open=false;renderChat()};
+$("#chatwrap").onclick=e=>{if(e.target.id==="chatwrap"){AB.open=false;renderChat()}};
+addEventListener("keydown",e=>{if(e.key==="Escape"&&AB.open){AB.open=false;renderChat()}});
+$("#cform").onsubmit=e=>{e.preventDefault();const i=$("#cq");ask(i.value);i.value=""};
 
 /* ===== events ===== */
 function bind(){
