@@ -458,7 +458,7 @@ function vInfo(){
 const L=(ar,en)=>lang==="ar"?ar:en;
 const AB={open:false,log:[]};
 const normA=x=>String(x||"").toLowerCase().replace(/[ً-ْـ]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي").replace(/[٠-٩]/g,d=>"٠١٢٣٤٥٦٧٨٩".indexOf(d));
-const has=(q,words)=>words.some(w=>/^[a-z ]{1,4}$/.test(w)?new RegExp("(^|[^a-z])"+w+"([^a-z]|$)").test(q):q.includes(normA(w)));
+const has=(q,words)=>words.some(w=>/^[a-z ]{1,4}$/.test(w)?new RegExp("(^|[^a-z])"+w+"(e?s)?([^a-z]|$)").test(q):q.includes(normA(w)));
 const KW={
  lashes:["رموش","رمش","lash","eyelash","سيلك","silk","فوليوم","volume","كلاسيك","classic","هايبرد","hybrid","اكستنشن","extension"],
  brows:["حواجب","حاجب","brow","لامينيشن","lamination"],
@@ -469,7 +469,8 @@ const KW={
 const IN={
  greet:["اهلا","هاي","هلا","سلام","مساء","صباح","hi","hello","hey","good morning","good evening"],
  human:["واتس","whatsapp","كلم","اكلم","موظف","حد يرد","human","call","phone","تليفون","رقم"],
- avail:["فاضي","فاضيه","متاح","available","free time","free slot","slot","النهارده","انهارده","بكره","بكرا","today","tomorrow","اقرب ميعاد","earliest"],
+ avail:["فاضي","فاضيه","متاح","available","free time","free slot","slot","اقرب ميعاد","earliest","opening"],
+ day:["النهارده","انهارده","بكره","بكرا","today","tomorrow"],
  hours:["مواعيد","ساعات","بتفتحو","بتقفلو","فاتحين","مفتوح","مقفول","الاتنين","اجازه","hours","open","close","monday","when are you"],
  loc:["فين","عنوان","مكان","لوكيشن","خريطه","location","where","address","map","directions"],
  pay:["عربون","دفع","ادفع","انستاباي","instapay","deposit","pay","cash","كاش","فيزا","visa","card"],
@@ -480,6 +481,7 @@ const IN={
  refill:["تعبئه","refill","fill"],
  allergy:["حساسيه","حساسة","allergy","allergic","patch","اختبار"]
 };
+const isAvail=q=>{const h=k=>has(q,IN[k]);if(h("pay")||h("cancel")||h("loc")||h("care"))return false;if(h("avail"))return true;return !h("hours")&&h("day")&&h("book")};
 const catName=c=>{const x=CATS.find(k=>k[0]===c);return x?L(x[1],x[2]):c};
 const estNote=()=>LIVE?"":`<span class="note">${esc(t("estPrices"))}</span><br>`;
 const fmtP=m=>`${esc(nm(m))} — <b>${N(m.price)} ${t("egp")}</b> · ${N(m.min)} ${t("minutes")}`;
@@ -512,7 +514,7 @@ function answer(raw,fresh){
   const {svcs,cat}=svcHits(q);
   const one=svcs.length===1?svcs[0]:null;
   const is=k=>has(q,IN[k]);
-  if(is("avail")||(is("book")&&(q.includes("النهارده")||q.includes("بكره")||q.includes("today")||q.includes("tomorrow")))){
+  if(isAvail(q)){
     const mn=one?one.min:(cat?Math.min(...MENU.filter(m=>m.cat===cat).map(m=>m.min)):60);
     const today=cairoToday(),tom=addDays(today,1);
     const day=(q.includes("بكره")||q.includes("بكرا")||q.includes("tomorrow"))?[tom]:[today,tom];
@@ -567,7 +569,7 @@ function takenNow(){
 function ask(text){
   const v=String(text||"").trim().slice(0,200);if(!v)return;
   AB.log.push({who:"me",text:v});
-  const q=normA(v),avail=has(q,IN.avail)||(has(q,IN.book)&&/النهارده|انهارده|بكره|بكرا|today|tomorrow/.test(q));
+  const q=normA(v),avail=isAvail(q);
   if(avail){
     const msg={who:"bot",html:L("لحظة، بشوف المواعيد الفاضية…","One moment, checking free times…")};AB.log.push(msg);renderChat();
     takenNow().then(ok=>{msg.html=answer(v,ok);renderChat()});
