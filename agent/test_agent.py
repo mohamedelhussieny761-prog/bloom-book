@@ -26,6 +26,9 @@ class T(unittest.TestCase):
         d = A.Detector(0.45); self.assertEqual(d.count(np.zeros((480,640,3), dtype="uint8")), 0)
 
 class T2(unittest.TestCase):
+    def test_avg_capped(self):
+        L = A.Ledger(cfg); t = dt.datetime(2026,11,4,14,0,tzinfo=C); L.add("Hall", t, 80)
+        self.assertEqual(L.take_pending()[0][0]["people_avg"], 50)
     def test_change_during_upload_stays_pending(self):
         L = A.Ledger(cfg); t = dt.datetime(2026,11,4,14,59,tzinfo=C)
         L.add("Hall", t, 1); rows, sent = L.take_pending()

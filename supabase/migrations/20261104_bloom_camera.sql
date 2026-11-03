@@ -58,5 +58,5 @@ revoke all on function bloom.camera_ingest(text, text, jsonb) from public;
 grant execute on function bloom.camera_ingest(text, text, jsonb) to anon;
 notify pgrst, 'reload schema';
 
--- Register the shop PC (run once, privately, with the token the setup shows — never commit it):
---   insert into bloom.camera_agents (id, token_hash) values ('shop-pc', encode(extensions.digest('<TOKEN>','sha256'),'hex'));
+-- Register the shop PC (run once) with the FINGERPRINT that --setup prints (it is already the sha256; the token stays on the PC):
+--   insert into bloom.camera_agents (id, token_hash) values ('shop-pc', '<FINGERPRINT>');

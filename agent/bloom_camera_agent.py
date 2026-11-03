@@ -103,7 +103,7 @@ class HourStats:
         return {
             "day": day, "hour": hour, "camera": camera,
             "people_max": min(self.people_max, 50),
-            "people_avg": round(self.total / self.samples, 2) if self.samples else 0,
+            "people_avg": min(round(self.total / self.samples, 2), 50) if self.samples else 0,
             "busy_minutes": min(len(self.busy), 60),
             "offline_minutes": min(len(self.offline), 60),
             "after_hours_events": min(len(self.after_hours), 60),
@@ -291,8 +291,11 @@ def watch(cam: dict, cfg: dict, det: Detector, ledger: Ledger, stop: threading.E
                 log.warning("%s: detect failed: %s", name, e)
                 n = 0
             if ledger.add(name, t, n):
-                save_snapshot(cfg, name, frame, t)
                 log.info("%s: movement after hours (%d person)", name, n)
+                try:
+                    save_snapshot(cfg, name, frame, t)
+                except Exception as e:          # full disk etc. must not stop the camera
+                    log.warning("%s: could not save snapshot: %s", name, e)
         stop.wait(cfg["sample_seconds"])
 
 
