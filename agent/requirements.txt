@@ -1,0 +1,3 @@
+opencv-python>=4.9
+tzdata  # time zones on Windows
+# Better accuracy (optional, bigger download): ultralytics>=8.2
