@@ -61,6 +61,7 @@ class Detector:
     def __init__(self, min_conf: float):
         import cv2  # noqa: F401  (fail early with a clear message)
         self.min_conf = min_conf
+        self.lock = threading.Lock()            # one detection at a time across cameras
         self.kind = "hog"
         try:
             from ultralytics import YOLO  # type: ignore
@@ -73,6 +74,10 @@ class Detector:
         log.info("detector: %s", self.kind)
 
     def count(self, frame) -> int:
+        with self.lock:
+            return self._count(frame)
+
+    def _count(self, frame) -> int:
         if self.kind == "yolo":
             res = self.model(frame, classes=[0], conf=self.min_conf, verbose=False)
             return int(len(res[0].boxes)) if res else 0
@@ -110,18 +115,27 @@ def is_open(t: dt.datetime, cfg: dict) -> bool:
 
 
 class Ledger:
-    """Thread-safe store of HourStats keyed by (day, hour, camera)."""
+    """Thread-safe store of HourStats keyed by (day, hour, camera).
 
-    def __init__(self, cfg: dict):
+    Every changed hour is marked pending until the server confirms it, and the
+    whole ledger is saved to state.json so a restart never loses an hour.
+    """
+
+    def __init__(self, cfg: dict, state: Path | None = None):
         self.cfg = cfg
+        self.state = state
         self.lock = threading.Lock()
         self.stats: dict[tuple[str, int, str], HourStats] = {}
+        self.pending: set[tuple[str, int, str]] = set()
+        if state and state.exists():
+            self._load()
 
     def add(self, camera: str, t: dt.datetime, people: int | None) -> bool:
-        """Record one sample. Returns True when it is after-hours movement."""
+        """Record one sample. Returns True when it is new after-hours movement."""
         key = (t.date().isoformat(), t.hour, camera)
         with self.lock:
             s = self.stats.setdefault(key, HourStats())
+            self.pending.add(key)
             if people is None:
                 s.offline.add(t.minute)
                 return False
@@ -136,6 +150,16 @@ class Ledger:
                     return new
         return False
 
+    def take_pending(self) -> tuple[list[dict], set]:
+        """Rows for every hour not yet confirmed by the server (oldest first, max 200)."""
+        with self.lock:
+            keys = sorted(self.pending)[:200]
+            return [self.stats[k].row(*k) for k in keys], set(keys)
+
+    def confirm(self, keys: set) -> None:
+        with self.lock:
+            self.pending -= keys
+
     def rows(self, since: dt.datetime) -> list[dict]:
         with self.lock:
             out = []
@@ -146,10 +170,37 @@ class Ledger:
             return out
 
     def prune(self, before: dt.datetime) -> None:
+        """Forget old hours, but never one still waiting to be sent."""
         with self.lock:
-            for k in [k for k in self.stats
-                      if dt.datetime.fromisoformat(k[0]).replace(hour=k[1], tzinfo=CAIRO) < before]:
+            for k in [k for k in self.stats if k not in self.pending
+                      and dt.datetime.fromisoformat(k[0]).replace(hour=k[1], tzinfo=CAIRO) < before]:
                 del self.stats[k]
+
+    def save(self) -> None:
+        if not self.state:
+            return
+        with self.lock:
+            data = {"|".join(map(str, k)): {"samples": s.samples, "total": s.total, "people_max": s.people_max,
+                                            "busy": sorted(s.busy), "offline": sorted(s.offline),
+                                            "after_hours": sorted(s.after_hours), "pending": k in self.pending}
+                    for k, s in self.stats.items()}
+        tmp = self.state.with_suffix(".tmp")
+        tmp.write_text(json.dumps(data), encoding="utf-8")
+        os.replace(tmp, self.state)
+
+    def _load(self) -> None:
+        try:
+            data = json.loads(self.state.read_text(encoding="utf-8"))
+        except Exception as e:
+            log.warning("could not read %s: %s", self.state, e)
+            return
+        for k, v in data.items():
+            day, hour, cam = k.split("|", 2)
+            key = (day, int(hour), cam)
+            self.stats[key] = HourStats(v["samples"], v["total"], v["people_max"], set(v["busy"]),
+                                        set(v["offline"]), set(v["after_hours"]))
+            if v.get("pending"):
+                self.pending.add(key)
 
 
 # ---------- upload ----------
@@ -191,57 +242,82 @@ def clean_photos(cfg: dict, now: dt.datetime) -> None:
 
 
 # ---------- camera loop ----------
+class Reader:
+    """Reads one camera continuously so the latest frame is always fresh."""
+
+    def __init__(self, url: str, stop: threading.Event):
+        self.url, self.stop = url, stop
+        self.lock = threading.Lock()
+        self.frame, self.at = None, 0.0
+        threading.Thread(target=self._loop, daemon=True).start()
+
+    def _loop(self) -> None:
+        import cv2
+        while not self.stop.is_set():
+            cap = cv2.VideoCapture(self.url, cv2.CAP_FFMPEG)
+            while cap.isOpened() and not self.stop.is_set():
+                ok, frame = cap.read()          # blocks at the camera's own frame rate
+                if not ok or frame is None:
+                    break
+                with self.lock:
+                    self.frame, self.at = frame, time.time()
+            cap.release()
+            self.stop.wait(10)                  # camera dropped: try again in 10 s
+
+    def latest(self, max_age: float = 3.0):
+        with self.lock:
+            return self.frame if self.frame is not None and time.time() - self.at <= max_age else None
+
+
 def watch(cam: dict, cfg: dict, det: Detector, ledger: Ledger, stop: threading.Event) -> None:
-    import cv2
-    name, url = cam["name"], cam["rtsp"]
-    cap = None
+    name = cam["name"]
+    reader = Reader(cam["rtsp"], stop)
+    stop.wait(5)                                # give the stream a moment to start
     while not stop.is_set():
         t = dt.datetime.now(CAIRO)
-        if cap is None or not cap.isOpened():
-            cap = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
-        ok, frame = (cap.read() if cap is not None else (False, None))
-        if not ok or frame is None:
+        frame = reader.latest()
+        if frame is None:
             ledger.add(name, t, None)
-            if cap is not None:
-                cap.release()
-            cap = None
-            stop.wait(10)
-            continue
-        try:
-            n = det.count(frame)
-        except Exception as e:  # never die on one bad frame
-            log.warning("%s: detect failed: %s", name, e)
-            n = 0
-        if ledger.add(name, t, n):
-            save_snapshot(cfg, name, frame, t)
-            log.info("%s: movement after hours (%d person)", name, n)
-        # drain buffered frames so the next read is fresh
-        end = time.time() + cfg["sample_seconds"]
-        while time.time() < end and not stop.is_set():
-            if cap is not None:
-                cap.grab()
-            time.sleep(0.2)
+        else:
+            try:
+                n = det.count(frame)
+            except Exception as e:              # never die on one bad frame
+                log.warning("%s: detect failed: %s", name, e)
+                n = 0
+            if ledger.add(name, t, n):
+                save_snapshot(cfg, name, frame, t)
+                log.info("%s: movement after hours (%d person)", name, n)
+        stop.wait(cfg["sample_seconds"])
 
 
 def run(cfg: dict) -> None:
     det = Detector(cfg["min_confidence"])
-    ledger, stop = Ledger(cfg), threading.Event()
+    ledger, stop = Ledger(cfg, HERE / "state.json"), threading.Event()
     for cam in cfg["cameras"]:
         threading.Thread(target=watch, args=(cam, cfg, det, ledger, stop), daemon=True).start()
     log.info("watching %d camera(s)", len(cfg["cameras"]))
+    last_upload = 0.0
     try:
         while True:
-            time.sleep(cfg["upload_minutes"] * 60)
+            time.sleep(60)
+            ledger.save()                       # survive restarts
+            if time.time() - last_upload < cfg["upload_minutes"] * 60:
+                continue
+            last_upload = time.time()
             now = dt.datetime.now(CAIRO)
+            rows, keys = ledger.take_pending()
             try:
-                n = upload(cfg, ledger.rows(now - dt.timedelta(hours=1)))
+                n = upload(cfg, rows)
+                ledger.confirm(keys)
                 log.info("sent %d hourly row(s)", n)
-                ledger.prune(now - dt.timedelta(hours=3))
             except Exception as e:
                 log.warning("upload failed, will retry: %s", e)
+            ledger.prune(now - dt.timedelta(hours=3))
+            ledger.save()
             clean_photos(cfg, now)
     except KeyboardInterrupt:
         stop.set()
+        ledger.save()
 
 
 # ---------- setup helpers ----------
