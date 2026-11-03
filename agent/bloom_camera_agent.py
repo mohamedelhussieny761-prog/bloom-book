@@ -229,7 +229,8 @@ def save_snapshot(cfg: dict, camera: str, frame, t: dt.datetime) -> None:
     folder = HERE / cfg["photo_dir"] / t.date().isoformat()
     folder.mkdir(parents=True, exist_ok=True)
     safe = "".join(c for c in camera if c.isalnum() or c in "-_") or "cam"
-    cv2.imwrite(str(folder / f"{t:%H%M%S}_{safe}.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    tag = hashlib.sha1(camera.encode()).hexdigest()[:6]   # keeps "Hall 1" and "Hall1" apart
+    cv2.imwrite(str(folder / f"{t:%H%M%S}_{safe}_{tag}.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
 
 
 def clean_photos(cfg: dict, now: dt.datetime) -> None:
