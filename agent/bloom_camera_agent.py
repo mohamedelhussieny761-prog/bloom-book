@@ -127,6 +127,7 @@ class Ledger:
         self.lock = threading.Lock()
         self.stats: dict[tuple[str, int, str], HourStats] = {}
         self.pending: set[tuple[str, int, str]] = set()
+        self.rev: dict[tuple[str, int, str], int] = {}   # bumps on every change
         if state and state.exists():
             self._load()
 
@@ -136,6 +137,7 @@ class Ledger:
         with self.lock:
             s = self.stats.setdefault(key, HourStats())
             self.pending.add(key)
+            self.rev[key] = self.rev.get(key, 0) + 1
             if people is None:
                 s.offline.add(t.minute)
                 return False
@@ -150,15 +152,18 @@ class Ledger:
                     return new
         return False
 
-    def take_pending(self) -> tuple[list[dict], set]:
-        """Rows for every hour not yet confirmed by the server (oldest first, max 200)."""
+    def take_pending(self) -> tuple[list[dict], dict]:
+        """Rows for every hour not yet confirmed (oldest first, max 200) + their revisions."""
         with self.lock:
             keys = sorted(self.pending)[:200]
-            return [self.stats[k].row(*k) for k in keys], set(keys)
+            return [self.stats[k].row(*k) for k in keys], {k: self.rev.get(k, 0) for k in keys}
 
-    def confirm(self, keys: set) -> None:
+    def confirm(self, sent: dict) -> None:
+        """Clear only hours that did not change while the upload was in flight."""
         with self.lock:
-            self.pending -= keys
+            for k, r in sent.items():
+                if self.rev.get(k, 0) == r:
+                    self.pending.discard(k)
 
     def rows(self, since: dt.datetime) -> list[dict]:
         with self.lock:
@@ -175,6 +180,7 @@ class Ledger:
             for k in [k for k in self.stats if k not in self.pending
                       and dt.datetime.fromisoformat(k[0]).replace(hour=k[1], tzinfo=CAIRO) < before]:
                 del self.stats[k]
+                self.rev.pop(k, None)
 
     def save(self) -> None:
         if not self.state:

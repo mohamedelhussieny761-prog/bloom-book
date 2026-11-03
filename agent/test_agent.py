@@ -26,6 +26,11 @@ class T(unittest.TestCase):
         d = A.Detector(0.45); self.assertEqual(d.count(np.zeros((480,640,3), dtype="uint8")), 0)
 
 class T2(unittest.TestCase):
+    def test_change_during_upload_stays_pending(self):
+        L = A.Ledger(cfg); t = dt.datetime(2026,11,4,14,59,tzinfo=C)
+        L.add("Hall", t, 1); rows, sent = L.take_pending()
+        L.add("Hall", t.replace(second=50), 2)          # arrives while uploading
+        L.confirm(sent); self.assertEqual(L.take_pending()[0][0]["people_max"], 2)
     def test_pending_until_confirmed(self):
         L = A.Ledger(cfg); t = dt.datetime(2026,11,4,14,55,tzinfo=C)
         L.add("Hall", t, 1); rows, keys = L.take_pending(); self.assertEqual(len(rows), 1)
