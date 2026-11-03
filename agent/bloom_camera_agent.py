@@ -233,18 +233,25 @@ def save_snapshot(cfg: dict, camera: str, frame, t: dt.datetime) -> None:
 
 
 def clean_photos(cfg: dict, now: dt.datetime) -> None:
+    """Delete each snapshot older than keep_days (exactly), then empty day folders."""
     root = HERE / cfg["photo_dir"]
     if not root.exists():
         return
-    limit = (now - dt.timedelta(days=cfg["keep_days"])).date()
+    limit = now.timestamp() - cfg["keep_days"] * 86400
     for d in root.iterdir():
-        try:
-            if d.is_dir() and dt.date.fromisoformat(d.name) < limit:
-                for f in d.iterdir():
-                    f.unlink()
-                d.rmdir()
-        except ValueError:
+        if not d.is_dir():
             continue
+        for f in d.iterdir():
+            try:
+                if f.stat().st_mtime < limit:
+                    f.unlink()
+            except OSError as e:
+                log.warning("could not remove %s: %s", f, e)
+        try:
+            if not any(d.iterdir()):
+                d.rmdir()
+        except OSError:
+            pass
 
 
 # ---------- camera loop ----------
@@ -289,7 +296,9 @@ def watch(cam: dict, cfg: dict, det: Detector, ledger: Ledger, stop: threading.E
                 n = det.count(frame)
             except Exception as e:              # never die on one bad frame
                 log.warning("%s: detect failed: %s", name, e)
-                n = 0
+                ledger.add(name, t, None)       # counted as unavailable, not as an empty room
+                stop.wait(cfg["sample_seconds"])
+                continue
             if ledger.add(name, t, n):
                 log.info("%s: movement after hours (%d person)", name, n)
                 try:
@@ -309,7 +318,7 @@ def run(cfg: dict) -> None:
     try:
         while True:
             time.sleep(60)
-            ledger.save()                       # survive restarts
+            safe_save(ledger)                   # survive restarts
             if time.time() - last_upload < cfg["upload_minutes"] * 60:
                 continue
             last_upload = time.time()
@@ -322,11 +331,18 @@ def run(cfg: dict) -> None:
             except Exception as e:
                 log.warning("upload failed, will retry: %s", e)
             ledger.prune(now - dt.timedelta(hours=3))
-            ledger.save()
-            clean_photos(cfg, now)
+            clean_photos(cfg, now)              # first free space, then save
+            safe_save(ledger)
     except KeyboardInterrupt:
         stop.set()
+        safe_save(ledger)
+
+
+def safe_save(ledger: Ledger) -> None:
+    try:
         ledger.save()
+    except Exception as e:                      # full disk etc.: keep running, retry next minute
+        log.warning("could not save state: %s", e)
 
 
 # ---------- setup helpers ----------
@@ -400,6 +416,11 @@ def main(argv: list[str] | None = None) -> int:
     cfg = load_cfg()
     if not cfg["cameras"] or not cfg["token"] or not cfg["anon_key"]:
         print("Run --setup first and add the cameras to config.json.")
+        return 1
+    names = [c.get("name", "") for c in cfg["cameras"]]
+    bad = [n for n in names if not 1 <= len(n) <= 40]
+    if bad or len(set(names)) != len(names):
+        print("Each camera needs its own name, 1 to 40 characters.")
         return 1
     if a.test:
         test(cfg)

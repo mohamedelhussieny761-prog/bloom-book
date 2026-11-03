@@ -26,6 +26,13 @@ class T(unittest.TestCase):
         d = A.Detector(0.45); self.assertEqual(d.count(np.zeros((480,640,3), dtype="uint8")), 0)
 
 class T2(unittest.TestCase):
+    def test_photo_retention_exact(self):
+        import tempfile, pathlib, os, time
+        A.HERE = pathlib.Path(tempfile.mkdtemp()); d = A.HERE / "snapshots" / "2026-11-04"; d.mkdir(parents=True)
+        old, new = d / "a.jpg", d / "b.jpg"; old.write_bytes(b"x"); new.write_bytes(b"x")
+        now = time.time(); os.utime(old, (now - 7*86400 - 60,)*2)
+        A.clean_photos(dict(cfg), dt.datetime.fromtimestamp(now, C))
+        self.assertFalse(old.exists()); self.assertTrue(new.exists())
     def test_avg_capped(self):
         L = A.Ledger(cfg); t = dt.datetime(2026,11,4,14,0,tzinfo=C); L.add("Hall", t, 80)
         self.assertEqual(L.take_pending()[0][0]["people_avg"], 50)

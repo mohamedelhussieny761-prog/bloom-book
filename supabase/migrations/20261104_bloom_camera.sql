@@ -40,7 +40,7 @@ begin
     raise exception 'bloom: bad camera rows'; end if;
   for r in select * from jsonb_array_elements(p_rows) loop
     insert into camera_hourly as c (day, hour, camera, people_max, people_avg, busy_minutes, offline_minutes, after_hours_events, updated_at)
-    values ((r->>'day')::date, (r->>'hour')::smallint, left(r->>'camera',40),
+    values ((r->>'day')::date, (r->>'hour')::smallint, r->>'camera',   -- no truncation: too long is rejected
             coalesce((r->>'people_max')::smallint,0), coalesce((r->>'people_avg')::numeric,0),
             coalesce((r->>'busy_minutes')::smallint,0), coalesce((r->>'offline_minutes')::smallint,0),
             coalesce((r->>'after_hours_events')::smallint,0), now())
