@@ -230,7 +230,9 @@ def save_snapshot(cfg: dict, camera: str, frame, t: dt.datetime) -> None:
     folder.mkdir(parents=True, exist_ok=True)
     safe = "".join(c for c in camera if c.isalnum() or c in "-_") or "cam"
     tag = hashlib.sha1(camera.encode()).hexdigest()[:6]   # keeps "Hall 1" and "Hall1" apart
-    cv2.imwrite(str(folder / f"{t:%H%M%S}_{safe}_{tag}.jpg"), frame, [cv2.IMWRITE_JPEG_QUALITY, 80])
+    path = folder / f"{t:%H%M%S}_{safe}_{tag}.jpg"
+    if not cv2.imwrite(str(path), frame, [cv2.IMWRITE_JPEG_QUALITY, 80]):
+        raise OSError(f"could not write {path}")
 
 
 def clean_photos(cfg: dict, now: dt.datetime) -> None:
@@ -332,7 +334,10 @@ def run(cfg: dict) -> None:
             except Exception as e:
                 log.warning("upload failed, will retry: %s", e)
             ledger.prune(now - dt.timedelta(hours=3))
-            clean_photos(cfg, now)              # first free space, then save
+            try:
+                clean_photos(cfg, now)          # first free space, then save
+            except Exception as e:              # unreadable folder etc.: keep monitoring
+                log.warning("photo cleanup failed: %s", e)
             safe_save(ledger)
     except KeyboardInterrupt:
         stop.set()
