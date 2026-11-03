@@ -428,6 +428,9 @@ def main(argv: list[str] | None = None) -> int:
     if bad or len(set(names)) != len(names):
         print("Each camera needs its own name, 1 to 40 characters.")
         return 1
+    if any(not str(c.get("rtsp", "")).startswith("rtsp://") for c in cfg["cameras"]):
+        print("Each camera needs its rtsp:// address in config.json.")
+        return 1
     if a.test:
         test(cfg)
         return 0
